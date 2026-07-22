@@ -97,6 +97,38 @@
     animation: cut-in 180ms ease-out both;
   }
 
+  .cinematic-film-strip {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .cinematic-film-strip::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mobile-film-ambient {
+    filter: blur(24px) saturate(0.82);
+    opacity: 0.52;
+    transition: opacity 420ms ease-out;
+  }
+
+  .mobile-cold-open {
+    animation: mobile-cold-open-exit 1650ms var(--ease-dramatic) both;
+  }
+
+  .mobile-cold-open-kicker,
+  .mobile-cold-open-footer {
+    animation: mobile-cold-open-copy 1450ms var(--ease-expo-out) both;
+  }
+
+  .mobile-cold-open-title {
+    animation: mobile-cold-open-title 1450ms var(--ease-expo-out) both;
+  }
+
+  .mobile-cold-open-aperture {
+    animation: mobile-cold-open-aperture 1450ms var(--ease-dramatic) both;
+  }
+
   @keyframes panel-enter {
     from {
       opacity: 0;
@@ -116,6 +148,29 @@
   @keyframes cut-in {
     from { opacity: 0.65; }
     to { opacity: 1; }
+  }
+
+  @keyframes mobile-cold-open-exit {
+    0%, 78% { opacity: 1; }
+    100% { opacity: 0; visibility: hidden; }
+  }
+
+  @keyframes mobile-cold-open-copy {
+    0% { opacity: 0; transform: translateY(10px); }
+    22%, 78% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-6px); }
+  }
+
+  @keyframes mobile-cold-open-title {
+    0% { opacity: 0; transform: scale(1.08); letter-spacing: -0.14em; }
+    22%, 74% { opacity: 1; transform: scale(1); letter-spacing: -0.09em; }
+    100% { opacity: 0; transform: scale(0.985); letter-spacing: -0.09em; }
+  }
+
+  @keyframes mobile-cold-open-aperture {
+    0%, 12% { clip-path: inset(50% 0 50% 0); opacity: 0; }
+    38%, 78% { clip-path: inset(0 0 0 0); opacity: 1; }
+    100% { clip-path: inset(0 0 0 0); opacity: 0; }
   }
 
   /* Noise texture overlay */
@@ -338,6 +393,10 @@
   
   .noise-overlay {
     animation: none !important;
+  }
+
+  .mobile-cold-open {
+    display: none;
   }
 }
 

@@ -6,31 +6,24 @@ import { works } from '../works-data';
 
 const heroWork = works[0];
 const frameCount = heroWork.stills.length;
-const nextHeroWork = works[1];
-
-type MobileViewMode = 'frame' | 'contact' | 'notes';
-
-const heroCamera = heroWork.specs.find((spec) => spec.label === 'CAMERA')?.value ?? 'DIGITAL CINEMA';
-const heroLenses = heroWork.specs.find((spec) => spec.label === 'LENSES')?.value ?? 'CINEMA LENSES';
-const heroRecording = heroWork.specs.find((spec) => spec.label === 'RECORDING')?.value ?? 'DIGITAL 4K';
 
 const clamp = (value: number) => Math.min(1, Math.max(0, value));
 
 export function Hero() {
   const playSlate = useSlateNavigate();
   const sectionRef = useRef<HTMLElement>(null);
-  const mobileScrubRef = useRef<HTMLDivElement>(null);
-  const mobileScrubPointerRef = useRef<number | null>(null);
-  const pullStartRef = useRef<{ pointerId: number; y: number } | null>(null);
-  const pullProgressRef = useRef(0);
-  const pullTriggeredRef = useRef(false);
+  const mobileFilmStripRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number | null>(null);
   const [activeFrame, setActiveFrame] = useState(0);
   const [frameMode, setFrameMode] = useState(false);
-  const [mobileViewMode, setMobileViewMode] = useState<MobileViewMode>('frame');
-  const [mobileIdentityCollapsed, setMobileIdentityCollapsed] = useState(false);
-  const [mobileScrubbing, setMobileScrubbing] = useState(false);
-  const [pullProgress, setPullProgress] = useState(0);
+  const [mobileIntroVisible, setMobileIntroVisible] = useState(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
+    try {
+      return window.sessionStorage.getItem('vio-mobile-intro-seen') !== '1';
+    } catch {
+      return true;
+    }
+  });
   const [scrollProgress, setScrollProgress] = useState(0);
   const [viewport, setViewport] = useState(() => ({
     width: window.innerWidth,
@@ -106,79 +99,6 @@ export function Hero() {
     setFrameMode(true);
   };
 
-  const selectMobileFrame = (index: number) => {
-    setMobileIdentityCollapsed(true);
-    setActiveFrame(index);
-  };
-
-  const scrubMobileFrame = (clientX: number) => {
-    const surface = mobileScrubRef.current;
-    if (!surface) return;
-    const rect = surface.getBoundingClientRect();
-    const progress = clamp((clientX - rect.left) / rect.width);
-    setActiveFrame(Math.min(frameCount - 1, Math.floor(progress * frameCount)));
-  };
-
-  const startMobileScrub = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (event.pointerType === 'mouse' && event.button !== 0) return;
-    event.currentTarget.setPointerCapture(event.pointerId);
-    mobileScrubPointerRef.current = event.pointerId;
-    setMobileIdentityCollapsed(true);
-    setMobileScrubbing(true);
-    scrubMobileFrame(event.clientX);
-  };
-
-  const moveMobileScrub = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (mobileScrubPointerRef.current !== event.pointerId) return;
-    scrubMobileFrame(event.clientX);
-  };
-
-  const endMobileScrub = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (mobileScrubPointerRef.current !== event.pointerId) return;
-    mobileScrubPointerRef.current = null;
-    setMobileScrubbing(false);
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    }
-  };
-
-  const changeMobileViewMode = (mode: MobileViewMode) => {
-    setMobileIdentityCollapsed(true);
-    setMobileViewMode(mode);
-  };
-
-  const startWorkPull = (event: React.PointerEvent<HTMLButtonElement>) => {
-    if (event.pointerType === 'mouse' && event.button !== 0) return;
-    event.currentTarget.setPointerCapture(event.pointerId);
-    pullStartRef.current = { pointerId: event.pointerId, y: event.clientY };
-    pullTriggeredRef.current = false;
-  };
-
-  const moveWorkPull = (event: React.PointerEvent<HTMLButtonElement>) => {
-    const start = pullStartRef.current;
-    if (!start || start.pointerId !== event.pointerId) return;
-    const progress = clamp((start.y - event.clientY) / 96);
-    pullProgressRef.current = progress;
-    setPullProgress(progress);
-  };
-
-  const endWorkPull = (event: React.PointerEvent<HTMLButtonElement>) => {
-    const start = pullStartRef.current;
-    if (!start || start.pointerId !== event.pointerId) return;
-    const releaseProgress = clamp((start.y - event.clientY) / 96);
-    const shouldOpen = Math.max(pullProgressRef.current, releaseProgress) >= 0.55;
-    pullStartRef.current = null;
-    pullProgressRef.current = 0;
-    setPullProgress(0);
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    }
-    if (shouldOpen) {
-      pullTriggeredRef.current = true;
-      openWork();
-    }
-  };
-
   const openWork = () => {
     playSlate(`/work/${heroWork.slug}`, {
       scene: 'SCENE 01',
@@ -187,12 +107,38 @@ export function Hero() {
     });
   };
 
-  const openNextWork = () => {
-    playSlate(`/work/${nextHeroWork.slug}`, {
-      scene: 'SCENE 02',
-      title: nextHeroWork.titleKo,
-      subtitle: `${nextHeroWork.titleEn} · ${nextHeroWork.year}`,
-    });
+  useEffect(() => {
+    if (desktop || !mobileIntroVisible) return;
+
+    const timer = window.setTimeout(() => {
+      setMobileIntroVisible(false);
+      try {
+        window.sessionStorage.setItem('vio-mobile-intro-seen', '1');
+      } catch {
+        // Keep the intro ephemeral when storage is unavailable.
+      }
+    }, 1650);
+
+    return () => window.clearTimeout(timer);
+  }, [desktop, mobileIntroVisible]);
+
+  const dismissMobileIntro = () => {
+    setMobileIntroVisible(false);
+    try {
+      window.sessionStorage.setItem('vio-mobile-intro-seen', '1');
+    } catch {
+      // Keep the main experience accessible when storage is unavailable.
+    }
+  };
+
+  const updateMobileFrameFromScroll = () => {
+    const filmStrip = mobileFilmStripRef.current;
+    if (!filmStrip || filmStrip.clientHeight === 0) return;
+    const nextFrame = Math.min(
+      frameCount - 1,
+      Math.max(0, Math.round(filmStrip.scrollTop / filmStrip.clientHeight))
+    );
+    setActiveFrame(nextFrame);
   };
 
   return (
@@ -389,216 +335,113 @@ export function Hero() {
           </button>
         </div>
 
-        <div className="flex min-h-[100svh] flex-col px-4 pb-8 pt-20 lg:hidden">
-          <div
-            className={`overflow-hidden bg-[#ecebe6] text-black transition-[max-height] duration-500 ${mobileIdentityCollapsed ? 'max-h-[58px]' : 'max-h-[310px]'}`}
-            style={{ transitionTimingFunction: 'var(--ease-expo-out)' }}
-          >
-            <div className="flex h-[58px] items-center justify-between border-b border-black/15 px-5">
-              <button
-                type="button"
-                onClick={() => setMobileIdentityCollapsed((collapsed) => !collapsed)}
-                className="flex h-11 items-center text-xs font-semibold tracking-[-0.03em] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-highlight"
-                aria-expanded={!mobileIdentityCollapsed}
-                aria-controls="mobile-identity"
-              >
-                VIO KIM
-              </button>
-              <span className="font-mono text-[8px] tracking-[0.22em] text-black/45">
-                {mobileIdentityCollapsed ? 'TAP TO OPEN' : 'DOP · SEOUL'}
-              </span>
-            </div>
-            <div
-              id="mobile-identity"
-              className={`px-5 text-center transition-[opacity,transform] duration-300 ${mobileIdentityCollapsed ? '-translate-y-3 opacity-0' : 'translate-y-0 opacity-100'}`}
-              aria-hidden={mobileIdentityCollapsed}
-            >
-              <div className="py-9">
-                <p className="mb-4 font-mono text-[8px] tracking-[0.28em] text-black/45">DIRECTOR OF PHOTOGRAPHY</p>
-                <h1 className="flex items-center justify-center whitespace-nowrap text-[18vw] font-bold leading-[0.82] tracking-[-0.09em]">
-                  <span>VIO</span>
-                  <span className="ml-[0.08em] bg-highlight px-[0.1em] pb-[0.08em]">KIM</span>
-                </h1>
-                <p className="mt-6 text-sm text-black/60">빛과 어둠 사이, 프레임 안의 이야기.</p>
-              </div>
-            </div>
+        <div className="relative flex h-[100svh] flex-col overflow-hidden px-4 pb-5 pt-20 lg:hidden">
+          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            <img
+              key={heroWork.stills[activeFrame]}
+              src={heroWork.stills[activeFrame]}
+              alt=""
+              className="mobile-film-ambient h-full w-full scale-110 object-cover"
+            />
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.78)_0%,rgba(0,0,0,0.25)_38%,rgba(0,0,0,0.55)_72%,rgba(0,0,0,0.94)_100%)]" />
           </div>
 
-          <div className="mt-4 flex flex-1 flex-col">
-            <div className="mb-2 flex items-center justify-between font-mono text-[8px] tracking-[0.18em]">
-              <span className={mobileScrubbing ? 'text-highlight' : 'text-white/45'}>
-                {mobileScrubbing ? 'SCRUBBING · RELEASE TO HOLD' : 'TOUCH + DRAG THE FRAME'}
-              </span>
-              <span className="text-highlight">CUT {String(activeFrame + 1).padStart(2, '0')} / {String(frameCount).padStart(2, '0')}</span>
+          <header className="relative z-20 flex shrink-0 items-end justify-between border-b border-white/20 pb-3">
+            <div>
+              <h1 className="text-[1.1rem] font-semibold leading-none tracking-[-0.045em]">VIO KIM</h1>
+              <p className="mt-2 font-mono text-[7px] tracking-[0.24em] text-white/55">DIRECTOR OF PHOTOGRAPHY</p>
             </div>
+            <p className="font-mono text-[7px] tracking-[0.22em] text-highlight">SEOUL · KR</p>
+          </header>
 
-            <div className="relative min-h-[38svh] overflow-hidden border-y border-white/15 bg-[#070909]">
-              {mobileViewMode === 'contact' ? (
-                <div className="grid min-h-[38svh] grid-cols-2 content-center gap-x-2 gap-y-4 p-3" aria-label={`${heroWork.titleKo} 콘택트시트`}>
-                  {heroWork.stills.map((still, index) => (
-                    <button
-                      key={still}
-                      type="button"
-                      onClick={() => {
-                        selectMobileFrame(index);
-                        setMobileViewMode('frame');
-                      }}
-                      className={`border-t-2 pt-2 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-highlight ${activeFrame === index ? 'border-highlight text-highlight' : 'border-white/15 text-white/35'}`}
-                      aria-label={`컷 ${index + 1}을 프레임 모드로 보기`}
-                    >
-                      <span className="mb-1 block font-mono text-[7px] tracking-[0.16em]">CUT {String(index + 1).padStart(2, '0')}</span>
-                      <img src={still} alt="" className="aspect-[2.39/1] w-full bg-black object-contain" />
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div
-                  ref={mobileScrubRef}
-                  role="slider"
-                  tabIndex={0}
-                  aria-label={`${heroWork.titleKo} 프레임 스크럽`}
-                  aria-valuemin={1}
-                  aria-valuemax={frameCount}
-                  aria-valuenow={activeFrame + 1}
-                  aria-valuetext={`컷 ${activeFrame + 1}`}
-                  onPointerDown={startMobileScrub}
-                  onPointerMove={moveMobileScrub}
-                  onPointerUp={endMobileScrub}
-                  onPointerCancel={endMobileScrub}
-                  onKeyDown={(event) => {
-                    if (event.key === 'ArrowRight') {
-                      event.preventDefault();
-                      selectMobileFrame(Math.min(frameCount - 1, activeFrame + 1));
-                    }
-                    if (event.key === 'ArrowLeft') {
-                      event.preventDefault();
-                      selectMobileFrame(Math.max(0, activeFrame - 1));
-                    }
-                  }}
-                  className="relative flex min-h-[38svh] touch-pan-y select-none items-center justify-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-highlight"
-                >
-                  <img
-                    key={heroWork.stills[activeFrame]}
-                    src={heroWork.stills[activeFrame]}
-                    alt={`${heroWork.titleKo} 전체 프레임 ${activeFrame + 1}`}
-                    draggable={false}
-                    className="cut-in pointer-events-none h-auto max-h-[38svh] w-full object-contain"
-                  />
-
-                  {mobileViewMode === 'notes' && (
-                    <div className="pointer-events-none absolute inset-0 flex flex-col justify-between bg-black/10 p-3 font-mono text-[7px] tracking-[0.15em] text-white">
-                      <div className="flex items-start justify-between gap-5">
-                        <span className="max-w-[58%] border-l border-t border-highlight px-2 py-1.5">
-                          CAMERA<br /><strong className="font-medium text-highlight">{heroCamera}</strong>
-                        </span>
-                        <span className="border-r border-t border-highlight px-2 py-1.5 text-right">
-                          FRAME<br /><strong className="font-medium text-highlight">2.39 : 1</strong>
-                        </span>
-                      </div>
-                      <div className="flex items-end justify-between gap-4">
-                        <span className="max-w-[62%] border-b border-l border-highlight px-2 py-1.5">
-                          LENS / RECORDING<br /><strong className="font-medium text-highlight">{heroLenses}<br />{heroRecording}</strong>
-                        </span>
-                        <span className="border-b border-r border-highlight px-2 py-1.5 text-right">
-                          LOOK<br /><strong className="font-medium text-highlight">CYAN · MAGENTA<br />SLOW PUSH</strong>
-                        </span>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="pointer-events-none absolute inset-x-0 bottom-2 grid grid-cols-6 gap-1 px-3" aria-hidden="true">
-                    {heroWork.stills.map((still, index) => (
-                      <span key={still} className={`h-px ${activeFrame === index ? 'bg-highlight' : 'bg-white/25'}`} />
-                    ))}
-                  </div>
-                  <span className="sr-only" aria-live="polite">컷 {activeFrame + 1} 선택됨</span>
-                </div>
-              )}
+          <div className="relative z-20 mt-4 flex shrink-0 items-end justify-between gap-5">
+            <div>
+              <p className="font-mono text-[7px] tracking-[0.2em] text-highlight">OPENING SEQUENCE · 01</p>
+              <p className="mt-1 text-[1.35rem] font-medium leading-tight tracking-[-0.045em]">
+                {heroWork.titleKo}
+                <span className="ml-2 font-display-serif text-[1.05rem] italic font-normal text-white/[0.62]">{heroWork.titleEn}</span>
+              </p>
             </div>
+            <p className="shrink-0 font-mono text-[8px] tracking-[0.18em] text-white/68">
+              CUT {String(activeFrame + 1).padStart(2, '0')} / {String(frameCount).padStart(2, '0')}
+            </p>
+          </div>
 
-            <div className="grid grid-cols-3 border-b border-white/15" aria-label="프레임 감상 모드">
-              {([
-                ['frame', 'FRAME'],
-                ['contact', 'CONTACT'],
-                ['notes', 'DP NOTES'],
-              ] as const).map(([mode, label]) => (
-                <button
-                  key={mode}
-                  type="button"
-                  onClick={() => changeMobileViewMode(mode)}
-                  className={`h-12 border-r border-white/15 font-mono text-[8px] tracking-[0.16em] last:border-r-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-highlight ${mobileViewMode === mode ? 'bg-[#ecebe6] text-black' : 'text-white/45'}`}
-                  aria-pressed={mobileViewMode === mode}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-
-            <div className="mt-3 grid grid-cols-6 gap-1" aria-label="프레임 선택">
-              {heroWork.stills.map((still, index) => (
+          <div
+            ref={mobileFilmStripRef}
+            onScroll={updateMobileFrameFromScroll}
+            className="cinematic-film-strip relative z-20 mt-3 h-[52svh] min-h-[300px] snap-y snap-mandatory overflow-y-auto overscroll-contain border-y border-white/20 bg-black/35"
+            aria-label={`${heroWork.titleKo} 세로 필름 스트립`}
+          >
+            {heroWork.stills.map((still, index) => {
+              const active = activeFrame === index;
+              return (
                 <button
                   key={still}
                   type="button"
-                  onClick={() => selectMobileFrame(index)}
-                  className={`h-11 border-t-2 font-mono text-[8px] tracking-[0.14em] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-highlight ${activeFrame === index ? 'border-highlight text-highlight' : 'border-white/15 text-white/35'}`}
-                  aria-pressed={activeFrame === index}
-                  aria-label={`컷 ${index + 1}로 이동`}
+                  onClick={() => {
+                    if (active) openWork();
+                  }}
+                  onFocus={() => setActiveFrame(index)}
+                  className="group flex h-full w-full shrink-0 snap-center items-center justify-center px-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-highlight"
+                  aria-current={active ? 'true' : undefined}
+                  aria-label={`${heroWork.titleKo} 컷 ${index + 1}${active ? ', 탭하여 작품 보기' : ''}`}
                 >
-                  {String(index + 1).padStart(2, '0')}
+                  <span className={`relative block w-full transition-[opacity,transform] duration-500 ${active ? 'scale-100 opacity-100' : 'scale-[0.94] opacity-35'}`}>
+                    <span className="absolute -top-6 left-0 font-mono text-[7px] tracking-[0.2em] text-white/45" aria-hidden="true">
+                      {String(index + 1).padStart(2, '0')} · {heroWork.year}
+                    </span>
+                    <img
+                      src={still}
+                      alt={`${heroWork.titleKo} 스틸 ${index + 1}`}
+                      draggable={false}
+                      className="aspect-[2.39/1] w-full bg-black object-contain shadow-[0_22px_70px_rgba(0,0,0,0.5)]"
+                    />
+                    <span className={`absolute inset-x-0 -bottom-7 flex items-center justify-between font-mono text-[7px] tracking-[0.18em] transition-opacity ${active ? 'opacity-100' : 'opacity-0'}`} aria-hidden="true">
+                      <span className="text-highlight">ACTIVE FRAME</span>
+                      <span className="text-white/[0.48]">TAP TO ENTER ↗</span>
+                    </span>
+                  </span>
                 </button>
-              ))}
-            </div>
-
-            <button
-              type="button"
-              onClick={() => {
-                if (pullTriggeredRef.current) {
-                  pullTriggeredRef.current = false;
-                  return;
-                }
-                openWork();
-              }}
-              onPointerDown={startWorkPull}
-              onPointerMove={moveWorkPull}
-              onPointerUp={endWorkPull}
-              onPointerCancel={endWorkPull}
-              className="relative mt-2 min-h-[72px] touch-none overflow-hidden border-y border-white/15 px-4 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-highlight"
-              aria-label={`${heroWork.titleKo} 상세 보기. 탭하거나 위로 당겨서 열기`}
-            >
-              <span
-                className="flex items-center justify-between transition-transform duration-150"
-                style={{ transform: `translateY(${-10 * pullProgress}px)` }}
-              >
-                <span>
-                  <span className="block font-mono text-[7px] tracking-[0.18em] text-highlight">↑ PULL UP OR TAP</span>
-                  <span className="mt-1 block text-lg font-medium tracking-[-0.035em]">{heroWork.titleKo} · {heroWork.titleEn}</span>
-                </span>
-                <ArrowUpRight className="h-5 w-5 text-highlight" />
-              </span>
-              <span
-                className="absolute inset-x-4 bottom-1 h-px origin-left bg-highlight transition-transform duration-100"
-                style={{ transform: `scaleX(${Math.max(0.08, pullProgress)})` }}
-                aria-hidden="true"
-              />
-            </button>
-
-            <button
-              type="button"
-              onClick={openNextWork}
-              className="group mt-3 grid min-h-[58px] grid-cols-[1fr_64px] items-stretch overflow-hidden border border-white/15 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-highlight"
-            >
-              <span className="flex items-center justify-between gap-4 px-4">
-                <span>
-                  <span className="block font-mono text-[7px] tracking-[0.18em] text-white/35">NEXT FRAME STUDY</span>
-                  <span className="mt-1 block text-sm text-white/75">{nextHeroWork.titleKo} · {nextHeroWork.titleEn}</span>
-                </span>
-                <span className="font-mono text-[8px] tracking-[0.16em] text-highlight">PEEK ↗</span>
-              </span>
-              <span className="relative overflow-hidden border-l border-white/15">
-                <img src={nextHeroWork.stills[0]} alt="" className="absolute inset-0 h-full w-[190px] max-w-none object-cover object-center transition-transform duration-500 group-hover:-translate-x-4" />
-              </span>
-            </button>
+              );
+            })}
           </div>
+
+          <div className="relative z-20 mt-auto flex min-h-12 shrink-0 items-end justify-between gap-4 pt-3">
+            <p className="font-mono text-[7px] tracking-[0.19em] text-white/55">
+              SWIPE TO CUT · TAP TO ENTER
+            </p>
+            <a
+              href="#works"
+              className="flex min-h-11 items-center gap-2 font-mono text-[7px] tracking-[0.18em] text-white/68 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-highlight"
+            >
+              VIEW ALL WORKS <span className="text-highlight">↓</span>
+            </a>
+          </div>
+
+          <span className="sr-only" aria-live="polite">컷 {activeFrame + 1} 선택됨</span>
+
+          {mobileIntroVisible && (
+            <button
+              type="button"
+              onClick={dismissMobileIntro}
+              className="mobile-cold-open absolute inset-0 z-50 flex flex-col items-center justify-center overflow-hidden bg-black px-6 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-highlight"
+              aria-label="사이트 오프닝 건너뛰기"
+            >
+              <span className="mobile-cold-open-kicker font-mono text-[7px] tracking-[0.34em] text-white/45">DIRECTOR OF PHOTOGRAPHY · SEOUL</span>
+              <span className="mobile-cold-open-title mt-5 flex items-center justify-center whitespace-nowrap text-[20vw] font-bold leading-[0.82] tracking-[-0.09em]" aria-hidden="true">
+                <span>VIO</span>
+                <span className="ml-[0.08em] bg-highlight px-[0.1em] pb-[0.08em] text-black">KIM</span>
+              </span>
+              <span className="mobile-cold-open-aperture mt-8 block w-full overflow-hidden">
+                <img src={heroWork.stills[1]} alt="" className="aspect-[2.39/1] w-full bg-black object-contain" />
+              </span>
+              <span className="mobile-cold-open-footer mt-7 flex w-full items-center justify-between font-mono text-[7px] tracking-[0.2em] text-white/45">
+                <span>EVERY FRAME TELLS A STORY</span>
+                <span>TAP TO SKIP</span>
+              </span>
+            </button>
+          )}
         </div>
       </div>
     </section>
