@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 export function CustomCursor() {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
+  const [label, setLabel] = useState('VIEW');
 
   useEffect(() => {
     const finePointer = window.matchMedia('(pointer: fine)').matches;
@@ -13,7 +14,9 @@ export function CustomCursor() {
       if (!ref.current) return;
       ref.current.style.transform = `translate3d(${event.clientX}px, ${event.clientY}px, 0)`;
       const target = event.target as HTMLElement;
-      setVisible(Boolean(target.closest('[data-cursor]')));
+      const cursorTarget = target.closest<HTMLElement>('[data-cursor]');
+      setVisible(Boolean(cursorTarget));
+      if (cursorTarget) setLabel(cursorTarget.dataset.cursorText ?? 'VIEW');
     };
     const onLeave = () => setVisible(false);
 
@@ -33,7 +36,7 @@ export function CustomCursor() {
         visible ? 'opacity-100' : 'opacity-0'
       }`}
     >
-      VIEW
+      {label}
     </div>
   );
 }

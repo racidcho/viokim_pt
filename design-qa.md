@@ -1,71 +1,76 @@
-# Design QA — CONTROLLED FRAME redesign
+# Design QA — FRAME SCRUB HERO
 
 **Source visual truth**
 
-- `/Users/racidcho/.codex/visualizations/2026/07/22/019f88ac-b441-7e81-9f4d-d180b99399e5/naked-city-audit/04-naked-city-reference.jpg`
-- Source pixels: `1265 × 712` at 1x density.
-- Target qualities: a bright central matte panel over full-bleed film imagery, sparse navigation, oversized wordmark, one decisive accent color, and restrained editorial motion.
+- `/Users/racidcho/.codex/generated_images/019f88ac-b441-7e81-9f4d-d180b99399e5/exec-1314b2ae-8119-4fce-89fa-2fb46eef4fd9.png`
+- Source pixels: `1487 × 1058`.
+- Selected state: option 1, desktop first screen with the matte identity panel, exposed film still, six-cut scrub rail, and teal active frame.
 
 **Rendered implementation evidence**
 
-- `qa-evidence/home-desktop-final-1440x1000.png` — browser-rendered home hero.
-- `qa-evidence/works-desktop-1440x1000.png` — still-first desktop work index.
-- `qa-evidence/detail-desktop-1440x1000.png` — work detail hero.
-- `qa-evidence/home-mobile-390x844.png` — mobile hero.
-- `qa-evidence/hero-reference-comparison-final.png` — source and final hero normalized into one side-by-side comparison input.
-- Desktop CSS viewport: `1440 × 1000`; implementation capture pixels: `1425 × 990`; `devicePixelRatio: 1`.
+- `qa-evidence/hero-frame-scrub/13-desktop-match-final.png` — final desktop state, `CUT 03`, scroll position `0`.
+- `qa-evidence/hero-frame-scrub/14-reference-comparison-final.png` — source and final implementation in one normalized side-by-side comparison input.
+- `qa-evidence/hero-frame-scrub/08-scroll-manifesto-final.png` — expanded-panel manifesto state.
+- `qa-evidence/hero-frame-scrub/09-mobile.png` — responsive touch/thumbnail state.
+- Desktop CSS viewport: `1440 × 1024`; implementation capture pixels: `1425 × 1013`; `devicePixelRatio: 1`. The in-app browser capture excludes its scrollbar edge from the saved bitmap.
 - Mobile CSS viewport: `390 × 844`; `devicePixelRatio: 1`.
-- Comparison normalization: both source and implementation were proportionally scaled to `720px` high and placed side by side without cropping. Differences in source aspect ratio were preserved.
-- State: home hero after the 620ms panel entrance, default work filter, first project detail, and mobile default hero.
+- Comparison normalization: source and implementation were proportionally scaled to `720px` high, kept uncropped, and stacked horizontally. Combined evidence pixels: `2024 × 720`.
 
 ## Findings
 
 - No actionable P0/P1/P2 findings remain.
-- Fonts and typography: the final oversized VIO KIM wordmark now matches the source hierarchy while retaining the project's Geist/Pretendard and Playfair display pairing. Small navigation and metadata keep the source's compact editorial rhythm without becoming illegible.
-- Spacing and layout rhythm: the centered matte panel, generous internal whitespace, edge gutters, and bottom metadata strip follow the source composition. Works and detail views use consistent hard cuts, square corners, thin rules, and editorial grids.
-- Colors and visual tokens: the source blue was intentionally translated to the existing VIO KIM teal `#35c9b8`; off-white `#ecebe6`, black, and restrained opacity values form the remaining palette. Contrast is sufficient in the verified states.
-- Image quality and asset fidelity: all visible photography uses the project's real film stills and portrait assets. No placeholder, CSS-drawn, or fabricated imagery is used. Natural image ratios are preserved in the work index and Frame Study.
-- Copy and content: Korean/English project titles, year, role, director, genre, format, verified specs, awards, festivals, and credits come from project data. Unverified specs and the empty-video placeholder are not rendered.
+- Fonts and typography: the VIO KIM wordmark has the source's dominant scale and compact tracking. The small mono labels, navigation, Korean line, and cut names preserve the intended editorial hierarchy without clipping or overlap.
+- Spacing and layout rhythm: the off-white panel occupies the selected option's left-weighted proportion, keeps the still exposed on the right, and separates identity from the scrub rail with a single fine rule. The scroll state expands the same panel instead of introducing an unrelated transition.
+- Colors and visual tokens: off-white, black, photographic blacks, and the existing VIO KIM teal `#35c9b8` reproduce the selected direction's restrained palette and active-state contrast.
+- Image quality and asset fidelity: all six frames and the full-bleed background use real stills already present in the project. No placeholder, fabricated film frame, inline SVG, or CSS-drawn image asset is used.
+- Copy and content: the portfolio identity, Korean statement, work title, frame index, scrub instruction, and selected-work action are concise and tied to the real project data.
+- Accessibility and interaction: the six cut controls are native buttons with `aria-pressed`, focus changes the selected frame, touch uses the thumbnail rail, and the selected-work CTA routes to the matching work detail.
 
 ## Focused comparison evidence
 
-- A separate crop was not required: at the normalized 720px comparison height, the panel proportions, navigation scale, wordmark hierarchy, accent treatment, imagery, and bottom strip are all directly readable.
-- `works-desktop-1440x1000.png` and `detail-desktop-1440x1000.png` were additionally reviewed at their native captures for crop, alignment, type wrapping, image quality, and hierarchy. These screens extend the source language rather than clone a source screen that was not provided.
+- A separate crop was not needed. At the normalized `720px` height in `14-reference-comparison-final.png`, the full wordmark, navigation, panel bounds, teal block, scrub rail, film crop, and lower-corner metadata remain readable enough to judge their alignment and hierarchy.
+- The manifesto and mobile states were reviewed at their native captures because those interaction states are not represented in the static source option.
 
 ## Comparison history
 
-1. Initial comparison: `qa-evidence/hero-reference-comparison.png`.
-   - Earlier P2 finding: the VIO KIM wordmark was materially smaller than the Naked City reference, weakening the first-screen identity and slowing visual recognition.
-   - Fix: increased the large-screen wordmark from `128px` to `176px`, increased the intermediate responsive scale, and strengthened its weight.
-2. Post-fix comparison: `qa-evidence/hero-reference-comparison-final.png`.
-   - Result: the wordmark now occupies the intended dominant central zone without clipping, overpowering the metadata, or breaking the mobile composition. No further P0/P1/P2 differences were found.
+1. Earlier implementation exposed a P1 black blank area during the sticky scroll transition.
+   - Cause: `overflow-hidden` on the hero and `overflow-x-hidden` on the home root created the wrong sticky containing block.
+   - Fix: removed hero overflow clipping and changed the home root to `overflow-x-clip`.
+   - Post-fix evidence: `qa-evidence/hero-frame-scrub/06-scroll-sticky-fixed.png`.
+2. The first manifesto capture had a P2 Korean text overlap.
+   - Fix: reduced the responsive display scale, increased line height, and made the highlighted phrase an inline block.
+   - Post-fix evidence: `qa-evidence/hero-frame-scrub/08-scroll-manifesto-final.png`.
+3. The custom SCRUB cursor produced a P2 obstruction over the logo and navigation.
+   - Fix: scoped the cursor target to the exposed image layer while keeping frame selection active across the hero.
+   - Post-fix evidence: `qa-evidence/hero-frame-scrub/12-desktop-match-cut-03.png`.
+4. The wordmark remained a P2 scale mismatch against the selected option.
+   - Fix: increased the large-screen wordmark to `clamp(8rem, 12vw, 11.5rem)`.
+   - Post-fix evidence: `qa-evidence/hero-frame-scrub/13-desktop-match-final.png` and the combined `14-reference-comparison-final.png`.
 
 ## Primary interactions tested
 
-- Home-to-Works anchor navigation.
-- Selected-work preview to routed detail page through the shortened slate transition.
-- Documentary filter and filtered result state.
-- Detail-page lightbox open/close and accessible dialog state.
-- Contact form labels, name/email/message entry, project-type selection, and enabled mail action without sending external mail during QA.
-- Mobile fixed navigation open state and visible menu layout.
+- Horizontal pointer movement switches across all six hard-cut frames.
+- Thumbnail click and keyboard focus update the active frame and `aria-pressed` state.
+- Scroll expands the matte panel and crossfades identity into the manifesto without a blank interval.
+- `VIEW SELECTED WORK` routes to `/work/be-my-baby` through the existing slate transition.
+- Mobile keeps the identity and horizontally scrollable cut rail usable without relying on hover.
 - Browser console checked: no error-level messages.
 
 ## Open questions
 
-- None blocking. Video embeds will remain absent until real URLs are supplied, by design.
+- None blocking. Motion uses still-frame scrubbing because project video assets are intentionally unavailable.
 
 ## Follow-up polish
 
-- P3: when trailers or reels become available, add them only to the matching project records; the detail page already supports Vimeo and YouTube embeds.
+- P3: when real reels arrive, the same frame rail can become a chapter selector without changing the first-screen composition.
 
 ## Implementation checklist
 
-- [x] Still-first hero and work discovery.
-- [x] One interaction grammar: cut, panel, slow push.
-- [x] Natural-ratio Frame Study and accessible lightbox.
-- [x] Verified-only production metadata.
-- [x] Functional mailto inquiry path with fallback address.
-- [x] Desktop and mobile browser QA.
-- [x] Source/implementation combined comparison and post-fix pass.
+- [x] Match selected option 1 with real portfolio imagery.
+- [x] Make the first screen interactive without requiring video.
+- [x] Preserve keyboard, pointer, and touch paths.
+- [x] Verify desktop, scroll, mobile, routing, and console state.
+- [x] Compare source and implementation in one normalized input.
+- [x] Resolve all P0/P1/P2 findings.
 
 final result: passed
