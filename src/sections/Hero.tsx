@@ -6,6 +6,11 @@ import { works } from '../works-data';
 
 const heroWork = works[0];
 const frameCount = heroWork.stills.length;
+const mobilePrologueFrames = [
+  { src: heroWork.stills[0], label: 'LIGHT', timecode: '00:00 — 01:50' },
+  { src: heroWork.stills[1], label: 'MOVEMENT', timecode: '01:50 — 03:35' },
+  { src: heroWork.stills[4], label: 'MEMORY', timecode: '03:35 — 05:40' },
+] as const;
 
 const clamp = (value: number) => Math.min(1, Math.max(0, value));
 
@@ -19,6 +24,7 @@ export function Hero() {
   const [mobileIntroVisible, setMobileIntroVisible] = useState(
     () => !window.matchMedia('(prefers-reduced-motion: reduce)').matches
   );
+  const [mobileIntroBeat, setMobileIntroBeat] = useState(0);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [viewport, setViewport] = useState(() => ({
     width: window.innerWidth,
@@ -105,11 +111,21 @@ export function Hero() {
   useEffect(() => {
     if (desktop || !mobileIntroVisible) return;
 
-    const timer = window.setTimeout(() => {
+    const movementTimer = window.setTimeout(() => {
+      setMobileIntroBeat(1);
+    }, 1900);
+    const memoryTimer = window.setTimeout(() => {
+      setMobileIntroBeat(2);
+    }, 3600);
+    const exitTimer = window.setTimeout(() => {
       setMobileIntroVisible(false);
-    }, 1650);
+    }, 5600);
 
-    return () => window.clearTimeout(timer);
+    return () => {
+      window.clearTimeout(movementTimer);
+      window.clearTimeout(memoryTimer);
+      window.clearTimeout(exitTimer);
+    };
   }, [desktop, mobileIntroVisible]);
 
   const dismissMobileIntro = () => {
@@ -410,20 +426,48 @@ export function Hero() {
             <button
               type="button"
               onClick={dismissMobileIntro}
-              className="mobile-cold-open absolute inset-0 z-50 flex flex-col items-center justify-center overflow-hidden bg-black px-6 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-highlight"
+              className="mobile-cold-open absolute inset-0 z-50 flex flex-col overflow-hidden bg-black px-5 pb-4 pt-7 text-left text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-highlight"
               aria-label="사이트 오프닝 건너뛰기"
             >
-              <span className="mobile-cold-open-kicker font-mono text-[7px] tracking-[0.34em] text-white/45">DIRECTOR OF PHOTOGRAPHY · SEOUL</span>
-              <span className="mobile-cold-open-title mt-5 flex items-center justify-center whitespace-nowrap text-[20vw] font-bold leading-[0.82] tracking-[-0.09em]" aria-hidden="true">
-                <span>VIO</span>
-                <span className="ml-[0.08em] bg-highlight px-[0.1em] pb-[0.08em] text-black">KIM</span>
+              <span className="mobile-prologue-heading block shrink-0">
+                <span className="block text-[clamp(2.8rem,14vw,4.2rem)] font-semibold leading-[0.82] tracking-[-0.075em]">VIO KIM</span>
+                <span className="mt-3 block font-mono text-[7px] tracking-[0.26em] text-white/55">
+                  DIRECTOR OF PHOTOGRAPHY · <span className="text-highlight">SEOUL</span>
+                </span>
+                <span className="mt-5 block text-[0.79rem] font-medium leading-relaxed tracking-[0.12em] text-white/86">
+                  빛을 설계하고, 움직임을 기다리고, 순간을 기억합니다.
+                </span>
               </span>
-              <span className="mobile-cold-open-aperture mt-8 block w-full overflow-hidden">
-                <img src={heroWork.stills[1]} alt="" className="aspect-[2.39/1] w-full bg-black object-contain" />
+
+              <span className="mobile-prologue-progress mt-5 flex shrink-0 items-center gap-4 border-t border-white/25 pt-3 font-mono text-[7px] tracking-[0.22em] text-white/58">
+                <span className="text-highlight">0{mobileIntroBeat + 1}</span>
+                <span>/ 03</span>
+                <span className="ml-auto">TAP TO SKIP</span>
               </span>
-              <span className="mobile-cold-open-footer mt-7 flex w-full items-center justify-between font-mono text-[7px] tracking-[0.2em] text-white/45">
-                <span>EVERY FRAME TELLS A STORY</span>
-                <span>TAP TO SKIP</span>
+
+              <span className="mobile-prologue-reel mt-3 grid min-h-0 flex-1 grid-rows-3 gap-2.5">
+                {mobilePrologueFrames.map((frame, index) => {
+                  const active = mobileIntroBeat === index;
+                  const revealed = mobileIntroBeat >= index;
+                  return (
+                    <span
+                      key={frame.label}
+                      className={`mobile-prologue-frame relative flex min-h-0 items-center justify-center overflow-hidden border transition-[border-color,opacity,transform] duration-700 ${active ? 'scale-100 border-highlight/85 opacity-100' : revealed ? 'scale-[0.975] border-white/20 opacity-55' : 'scale-[0.95] border-white/10 opacity-15'}`}
+                      aria-hidden="true"
+                    >
+                      <img src={frame.src} alt="" className="h-full max-h-full w-full object-contain" />
+                      <span className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-black/75 px-2.5 py-2 font-mono text-[6px] tracking-[0.2em] text-white/70">
+                        <span className={active ? 'text-highlight' : undefined}>0{index + 1} · {frame.label}</span>
+                        <span>{frame.timecode}</span>
+                      </span>
+                    </span>
+                  );
+                })}
+              </span>
+
+              <span className="mobile-prologue-meta mt-3 flex shrink-0 items-center justify-between border-t border-white/25 pt-3 font-mono text-[6px] tracking-[0.18em] text-white/72">
+                <span>{heroWork.titleKo} · <span className="font-display-serif text-[0.72rem] italic tracking-normal text-white">{heroWork.titleEn}</span> · <span className="text-highlight">SELECTED WORK 01</span></span>
+                <span className="text-highlight">{heroWork.year}</span>
               </span>
             </button>
           )}
