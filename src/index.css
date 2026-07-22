@@ -61,6 +61,7 @@
   
   html {
     scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
   }
   
   body {
@@ -78,6 +79,45 @@
 }
 
 @layer components {
+  .controlled-panel {
+    isolation: isolate;
+  }
+
+  .panel-enter {
+    animation: panel-enter 620ms var(--ease-expo-out) both;
+  }
+
+  .hero-still-push img,
+  .detail-still-push img {
+    animation: slow-push 14s linear both;
+    transform-origin: center center;
+  }
+
+  .cut-in {
+    animation: cut-in 180ms ease-out both;
+  }
+
+  @keyframes panel-enter {
+    from {
+      opacity: 0;
+      transform: translateY(22px) scale(0.985);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes slow-push {
+    from { transform: scale(1); }
+    to { transform: scale(1.06); }
+  }
+
+  @keyframes cut-in {
+    from { opacity: 0.65; }
+    to { opacity: 1; }
+  }
+
   /* Noise texture overlay */
   .noise-overlay {
     position: fixed;

@@ -20,6 +20,8 @@ const SlateContext = createContext<(to: string, info: SlateInfo) => void>(
   () => {}
 );
 
+// Context and provider intentionally live together to keep the transition contract local.
+// eslint-disable-next-line react-refresh/only-export-components
 export const useSlateNavigate = () => useContext(SlateContext);
 
 /**
@@ -60,28 +62,24 @@ export function SlateProvider({ children }: { children: ReactNode }) {
       },
     });
 
-    // 보드 상승
     tl.fromTo(
       boardRef.current,
       { yPercent: 100 },
-      { yPercent: 0, duration: 0.45, ease: 'expo.out' }
+      { yPercent: 0, duration: 0.25, ease: 'power3.out' }
     );
-    // 클랩바 닫힘 — 찰칵
     tl.fromTo(
       clapRef.current,
       { rotate: -28 },
-      { rotate: 0, duration: 0.18, ease: 'power4.in' },
-      '+=0.25'
+      { rotate: 0, duration: 0.1, ease: 'power4.in' },
+      '+=0.05'
     );
-    // 잠깐 홀드 후 이동
     tl.add(() => {
       if (pendingNav.current) void navigate(pendingNav.current);
-    }, '+=0.6');
-    // 보드 하강
+    }, '+=0.16');
     tl.to(
       boardRef.current,
-      { yPercent: -100, duration: 0.5, ease: 'expo.in' },
-      '+=0.1'
+      { yPercent: -100, duration: 0.24, ease: 'power3.in' },
+      '+=0.05'
     );
 
     return () => {
@@ -89,8 +87,6 @@ export function SlateProvider({ children }: { children: ReactNode }) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [info]);
-
-  const today = new Date().toISOString().slice(0, 10).replace(/-/g, '.');
 
   return (
     <SlateContext.Provider value={playSlate}>
@@ -114,11 +110,11 @@ export function SlateProvider({ children }: { children: ReactNode }) {
             <div className="flex-1 flex flex-col justify-between px-8 md:px-16 py-8 md:py-12 text-white">
               <div className="flex justify-between text-xs md:text-sm tracking-[0.3em] text-white/60">
                 <span>PROD. VIO KIM</span>
-                <span>{today}</span>
+                <span>CONTROLLED FRAME</span>
               </div>
               <div>
                 <p className="text-highlight text-xs md:text-sm tracking-[0.4em] mb-3">
-                  {info.scene} · TAKE 1
+                  {info.scene}
                 </p>
                 <p className="text-4xl md:text-7xl font-medium tracking-tight">
                   {info.title}
@@ -129,7 +125,7 @@ export function SlateProvider({ children }: { children: ReactNode }) {
               </div>
               <div className="flex justify-between text-xs md:text-sm tracking-[0.3em] text-white/60">
                 <span>DOP. 김비오 VIO KIM</span>
-                <span>CAM. A-CAM</span>
+                <span>CUT TO WORK</span>
               </div>
             </div>
           </div>

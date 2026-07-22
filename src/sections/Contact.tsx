@@ -1,372 +1,144 @@
-import { useEffect, useRef, useState } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Send } from 'lucide-react';
+import { useState } from 'react';
+import { ArrowUpRight } from 'lucide-react';
 import { contactConfig } from '../config';
 
-gsap.registerPlugin(ScrollTrigger);
+const contactEmail = 'viokimfilm@gmail.com';
 
 export function Contact() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const dividerRef = useRef<HTMLDivElement>(null);
-  const formRef = useRef<HTMLFormElement>(null);
-  const imageRef = useRef<HTMLDivElement>(null);
-  const titleRef = useRef<HTMLHeadingElement>(null);
-  const subtitleRef = useRef<HTMLParagraphElement>(null);
-  const inputsRef = useRef<(HTMLDivElement | null)[]>([]);
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const triggersRef = useRef<ScrollTrigger[]>([]);
-
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     projectType: '',
     message: '',
   });
-  const [focusedField, setFocusedField] = useState<string | null>(null);
 
-  if (!contactConfig.title) return null;
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const projectLabel =
+      contactConfig.projectTypeOptions.find((option) => option.value === formData.projectType)
+        ?.label ?? '프로젝트 문의';
+    const subject = `[촬영 문의] ${projectLabel} · ${formData.name}`;
+    const body = [
+      `이름: ${formData.name}`,
+      `회신 이메일: ${formData.email}`,
+      `프로젝트 유형: ${projectLabel}`,
+      '',
+      formData.message,
+    ].join('\n');
 
-  useEffect(() => {
-    const section = sectionRef.current;
-    if (!section) return;
-
-    const trigger = ScrollTrigger.create({
-      trigger: section,
-      start: 'top 80%',
-      onEnter: () => {
-        const tl = gsap.timeline();
-
-        // Diagonal divider line draw
-        tl.fromTo(
-          dividerRef.current,
-          { height: 0 },
-          { height: '100%', duration: 1.2, ease: 'expo.inOut' }
-        );
-
-        // Form container slide
-        tl.fromTo(
-          formRef.current,
-          { x: -60, opacity: 0 },
-          { x: 0, opacity: 1, duration: 0.8, ease: 'expo.out' },
-          '-=0.8'
-        );
-
-        // Image reveal
-        tl.fromTo(
-          imageRef.current,
-          {
-            scale: 1.1,
-            clipPath: 'polygon(100% 0, 100% 0, 100% 100%, 100% 100%)',
-          },
-          {
-            scale: 1,
-            clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%)',
-            duration: 1,
-            ease: 'expo.out',
-          },
-          '-=0.6'
-        );
-
-        // Title letter cascade
-        if (titleRef.current) {
-          const chars = titleRef.current.querySelectorAll('.char');
-          tl.fromTo(
-            chars,
-            { opacity: 0, y: 20 },
-            {
-              opacity: 1,
-              y: 0,
-              duration: 0.8,
-              stagger: 0.03,
-              ease: 'power2.out',
-            },
-            '-=0.7'
-          );
-        }
-
-        // Subtitle
-        tl.fromTo(
-          subtitleRef.current,
-          { y: 20, opacity: 0 },
-          { y: 0, opacity: 1, duration: 0.5, ease: 'power2.out' },
-          '-=0.5'
-        );
-
-        // Input fields stagger
-        inputsRef.current.forEach((input, i) => {
-          if (input) {
-            tl.fromTo(
-              input,
-              { y: 30, opacity: 0 },
-              { y: 0, opacity: 1, duration: 0.5, ease: 'power2.out' },
-              `-=${0.4 - i * 0.1}`
-            );
-          }
-        });
-
-        // Submit button bounce
-        tl.fromTo(
-          buttonRef.current,
-          { scale: 0 },
-          { scale: 1, duration: 0.6, ease: 'elastic.out(1, 0.5)' },
-          '-=0.3'
-        );
-      },
-      once: true,
-    });
-    triggersRef.current.push(trigger);
-
-if (window.matchMedia('(pointer: fine)').matches) {
-    // Image parallax
-    const parallaxTrigger = ScrollTrigger.create({
-      trigger: section,
-      start: 'top bottom',
-      end: 'bottom top',
-      scrub: 1,
-      onUpdate: (self) => {
-        if (imageRef.current) {
-          gsap.set(imageRef.current, {
-            y: -30 + self.progress * 60,
-          });
-        }
-      },
-    });
-    triggersRef.current.push(parallaxTrigger);
-    }
-
-    return () => {
-      triggersRef.current.forEach((t) => t.kill());
-      triggersRef.current = [];
-    };
-  }, []);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Form submitted:', formData);
+    window.location.href = `mailto:${contactEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 
-  const handleInputChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
-  ) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const titleChars = contactConfig.title.split('');
+  const fieldClass =
+    'w-full border-0 border-b border-black/25 bg-transparent px-0 py-3 text-base text-black outline-none transition-colors placeholder:text-black/35 focus:border-black focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-4 focus-visible:ring-offset-[#ecebe6]';
 
   return (
-    <section
-      ref={sectionRef}
-      id="contact"
-      className="relative py-32 px-8 lg:px-16 bg-black overflow-hidden"
-    >
-      <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-8 relative">
-          {/* Diagonal divider */}
-          <div
-            ref={dividerRef}
-            className="hidden lg:block absolute left-1/2 top-0 w-px bg-white/20"
-            style={{
-              transform: 'rotate(12deg) translateX(-50%)',
-              transformOrigin: 'top center',
-              willChange: 'height',
-            }}
-          />
+    <section id="contact" className="bg-black px-4 py-20 text-black sm:px-8 lg:py-28">
+      <div className="mx-auto grid max-w-7xl overflow-hidden bg-[#ecebe6] lg:grid-cols-[1.05fr_0.95fr]">
+        <div className="flex flex-col p-6 sm:p-10 lg:p-14">
+          <p className="mb-8 font-mono text-[10px] tracking-[0.28em] text-black/45">
+            05 · START A CONVERSATION
+          </p>
+          <h2 className="max-w-[760px] font-display-serif text-[clamp(4rem,8vw,8rem)] leading-[0.82] tracking-[-0.065em]">
+            LET'S MAKE
+            <br />
+            <span className="italic text-highlight">A FRAME.</span>
+          </h2>
+          <p className="mt-8 max-w-lg text-base leading-relaxed text-black/60 sm:text-lg">
+            {contactConfig.subtitle}
+          </p>
 
-          {/* Form side */}
-          <form
-            ref={formRef}
-            onSubmit={handleSubmit}
-            className="relative z-10"
-          >
-            {/* Title */}
-            <h2
-              ref={titleRef}
-              className="text-h2 lg:text-h1 text-white font-medium mb-4"
-            >
-              {titleChars.map((char, i) => (
-                <span key={i} className="char inline-block">
-                  {char === ' ' ? '\u00A0' : char}
-                </span>
-              ))}
-            </h2>
-
-            {/* Subtitle */}
-            <p
-              ref={subtitleRef}
-              className="text-body-lg text-white/60 mb-12"
-            >
-              {contactConfig.subtitle}
-            </p>
-
-            {/* Form fields */}
-            <div className="space-y-8">
-              {/* Name */}
-              <div
-                ref={(el) => {
-                  inputsRef.current[0] = el;
-                }}
-                className="relative"
-              >
-                <label
-                  className={`absolute left-0 transition-all duration-200 ${
-                    focusedField === 'name' || formData.name
-                      ? '-top-6 text-body-sm text-white'
-                      : 'top-3 text-body text-white/50'
-                  }`}
-                >
-                  {contactConfig.nameLabel}
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  onFocus={() => setFocusedField('name')}
-                  onBlur={() => setFocusedField(null)}
-                  className="w-full bg-transparent border-b border-white/20 py-3 text-white focus:outline-none focus:border-white transition-colors duration-300"
-                  required
-                />
-                <div
-                  className={`absolute bottom-0 left-0 h-px bg-white transition-all duration-300 ${
-                    focusedField === 'name' ? 'w-full' : 'w-0'
-                  }`}
-                />
-              </div>
-
-              {/* Email */}
-              <div
-                ref={(el) => {
-                  inputsRef.current[1] = el;
-                }}
-                className="relative"
-              >
-                <label
-                  className={`absolute left-0 transition-all duration-200 ${
-                    focusedField === 'email' || formData.email
-                      ? '-top-6 text-body-sm text-white'
-                      : 'top-3 text-body text-white/50'
-                  }`}
-                >
-                  {contactConfig.emailLabel}
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  onFocus={() => setFocusedField('email')}
-                  onBlur={() => setFocusedField(null)}
-                  className="w-full bg-transparent border-b border-white/20 py-3 text-white focus:outline-none focus:border-white transition-colors duration-300"
-                  required
-                />
-                <div
-                  className={`absolute bottom-0 left-0 h-px bg-white transition-all duration-300 ${
-                    focusedField === 'email' ? 'w-full' : 'w-0'
-                  }`}
-                />
-              </div>
-
-              {/* Project Type */}
-              <div
-                ref={(el) => {
-                  inputsRef.current[2] = el;
-                }}
-                className="relative"
-              >
-                <label
-                  className="absolute left-0 -top-6 text-body-sm text-white transition-all duration-200"
-                >
-                  {contactConfig.projectTypeLabel}
-                </label>
-                <select
-                  name="projectType"
-                  value={formData.projectType}
-                  onChange={handleInputChange}
-                  onFocus={() => setFocusedField('projectType')}
-                  onBlur={() => setFocusedField(null)}
-                  className={`w-full bg-transparent border-b border-white/20 py-3 focus:outline-none focus:border-white transition-colors duration-300 appearance-none cursor-pointer ${
-                    formData.projectType ? 'text-white' : 'text-white/50'
-                  }`}
-                >
-                  <option value="" className="bg-black">
-                    {contactConfig.projectTypePlaceholder}
-                  </option>
-                  {contactConfig.projectTypeOptions.map((option) => (
-                    <option key={option.value} value={option.value} className="bg-black">
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-                <div
-                  className={`absolute bottom-0 left-0 h-px bg-white transition-all duration-300 ${
-                    focusedField === 'projectType' ? 'w-full' : 'w-0'
-                  }`}
-                />
-              </div>
-
-              {/* Message */}
-              <div
-                ref={(el) => {
-                  inputsRef.current[3] = el;
-                }}
-                className="relative"
-              >
-                <label
-                  className={`absolute left-0 transition-all duration-200 ${
-                    focusedField === 'message' || formData.message
-                      ? '-top-6 text-body-sm text-white'
-                      : 'top-3 text-body text-white/50'
-                  }`}
-                >
-                  {contactConfig.messageLabel}
-                </label>
-                <textarea
-                  name="message"
-                  value={formData.message}
-                  onChange={handleInputChange}
-                  onFocus={() => setFocusedField('message')}
-                  onBlur={() => setFocusedField(null)}
-                  rows={4}
-                  className="w-full bg-transparent border-b border-white/20 py-3 text-white focus:outline-none focus:border-white transition-colors duration-300 resize-none"
-                />
-                <div
-                  className={`absolute bottom-0 left-0 h-px bg-white transition-all duration-300 ${
-                    focusedField === 'message' ? 'w-full' : 'w-0'
-                  }`}
-                />
-              </div>
+          <form onSubmit={handleSubmit} className="mt-12 grid gap-7 sm:grid-cols-2">
+            <div>
+              <label htmlFor="contact-name" className="font-mono text-[10px] tracking-[0.18em] text-black/50">
+                {contactConfig.nameLabel}
+              </label>
+              <input
+                id="contact-name"
+                name="name"
+                type="text"
+                required
+                autoComplete="name"
+                value={formData.name}
+                onChange={(event) => setFormData({ ...formData, name: event.target.value })}
+                className={fieldClass}
+              />
             </div>
-
-            {/* Submit button */}
-            <button
-              ref={buttonRef}
-              type="submit"
-              className="mt-12 px-10 py-4 bg-white text-black text-body font-medium flex items-center gap-3 hover:bg-highlight hover:text-white transition-colors duration-300 relative overflow-hidden group"
-            >
-              <span className="relative z-10">{contactConfig.submitButtonText}</span>
-              <Send className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform duration-300" />
-              <div className="absolute inset-0 bg-highlight transform -translate-x-full group-hover:translate-x-0 transition-transform duration-400 ease-[cubic-bezier(0.16,1,0.3,1)]" />
-            </button>
+            <div>
+              <label htmlFor="contact-email" className="font-mono text-[10px] tracking-[0.18em] text-black/50">
+                {contactConfig.emailLabel}
+              </label>
+              <input
+                id="contact-email"
+                name="email"
+                type="email"
+                required
+                autoComplete="email"
+                value={formData.email}
+                onChange={(event) => setFormData({ ...formData, email: event.target.value })}
+                className={fieldClass}
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <label htmlFor="contact-type" className="font-mono text-[10px] tracking-[0.18em] text-black/50">
+                {contactConfig.projectTypeLabel}
+              </label>
+              <select
+                id="contact-type"
+                name="projectType"
+                required
+                value={formData.projectType}
+                onChange={(event) => setFormData({ ...formData, projectType: event.target.value })}
+                className={fieldClass}
+              >
+                <option value="">{contactConfig.projectTypePlaceholder}</option>
+                {contactConfig.projectTypeOptions.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className="sm:col-span-2">
+              <label htmlFor="contact-message" className="font-mono text-[10px] tracking-[0.18em] text-black/50">
+                {contactConfig.messageLabel}
+              </label>
+              <textarea
+                id="contact-message"
+                name="message"
+                required
+                rows={4}
+                value={formData.message}
+                onChange={(event) => setFormData({ ...formData, message: event.target.value })}
+                className={`${fieldClass} resize-y`}
+              />
+            </div>
+            <div className="sm:col-span-2 flex flex-col gap-5 border-t border-black/15 pt-6 sm:flex-row sm:items-center sm:justify-between">
+              <p className="max-w-sm text-xs leading-relaxed text-black/45">
+                메일 앱이 열리지 않으면{' '}
+                <a className="underline underline-offset-4 hover:text-black" href={`mailto:${contactEmail}`}>
+                  {contactEmail}
+                </a>
+                으로 보내주세요.
+              </p>
+              <button
+                type="submit"
+                className="inline-flex min-h-12 items-center justify-center gap-3 bg-black px-6 font-mono text-[11px] tracking-[0.2em] text-white transition-colors hover:bg-highlight hover:text-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-highlight"
+              >
+                OPEN EMAIL <ArrowUpRight className="h-4 w-4" />
+              </button>
+            </div>
           </form>
+        </div>
 
-          {/* Image side */}
-          <div
-            ref={imageRef}
-            className="relative aspect-[2/3] lg:aspect-auto overflow-hidden"
-            style={{ willChange: 'transform, clip-path' }}
-          >
-            <img
-              src={contactConfig.image}
-              alt="Contact"
-              className="w-full h-full object-cover"
-            />
-
-            {/* Decorative blocks */}
-            <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-highlight/20" />
-            <div className="absolute -top-8 -right-8 w-24 h-24 bg-white/5" />
+        <div className="relative min-h-[430px] overflow-hidden lg:min-h-full" data-cursor>
+          <img
+            src={contactConfig.image}
+            alt="촬영 현장의 김비오 촬영감독"
+            className="h-full w-full object-cover"
+            loading="lazy"
+          />
+          <div className="absolute inset-x-0 bottom-0 flex justify-between bg-black/75 px-5 py-4 font-mono text-[9px] tracking-[0.18em] text-white/70">
+            <span>SEOUL · AVAILABLE WORLDWIDE</span>
+            <span>VIO KIM</span>
           </div>
         </div>
       </div>

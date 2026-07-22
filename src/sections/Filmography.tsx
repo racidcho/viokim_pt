@@ -1,6 +1,5 @@
 import { ArrowUpRight } from 'lucide-react';
 import { useSlateNavigate } from '../components/Slate';
-import { DisplayTitle } from '../components/DisplayTitle';
 import { filmography } from '../works-data';
 
 export function Filmography() {
@@ -16,15 +15,16 @@ export function Filmography() {
   return (
     <section
       id="filmography"
-      className="relative py-32 px-6 lg:px-16 bg-black overflow-hidden"
+      className="relative bg-black px-5 py-24 sm:px-8 lg:py-32"
     >
       <div className="max-w-7xl mx-auto">
-        <div className="mb-16 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+        <div className="mb-14 flex flex-col gap-6 border-t border-white/20 pt-6 md:flex-row md:items-end md:justify-between">
           <div>
-            <h2 className="text-4xl sm:text-h1 lg:text-display-xl text-white font-medium mb-4">
-              <DisplayTitle text="FILMOGRAPHY" />
+            <p className="mb-6 font-mono text-[10px] tracking-[0.28em] text-white/40">03 · COMPLETE INDEX</p>
+            <h2 className="font-display-serif text-[clamp(3.8rem,8vw,8rem)] leading-[0.8] tracking-[-0.06em] text-white">
+              FILM<span className="italic text-highlight">OGRAPHY</span>
             </h2>
-            <p className="text-body-lg text-white/50 max-w-xl">
+            <p className="mt-6 max-w-xl text-base text-white/50">
               2019 — 2026 · 장편 {filmography.filter((f) => f.type.includes('Feature')).length}
               편 · 단편 {filmography.filter((f) => f.type.includes('Short')).length}
               편 · 다큐멘터리 {filmography.filter((f) => f.type === 'Documentary').length}편
@@ -79,7 +79,7 @@ export function Filmography() {
                     subtitle: f.titleEn,
                   })
                 }
-                className={`${cls} w-full text-left cursor-pointer`}
+              className={`${cls} w-full cursor-pointer text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-highlight`}
               >
                 {inner}
               </button>

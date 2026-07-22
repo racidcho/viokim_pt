@@ -1,307 +1,167 @@
-import { useEffect, useRef, useState } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useMemo, useState } from 'react';
 import { ArrowUpRight } from 'lucide-react';
 import { useSlateNavigate } from '../components/Slate';
-import { WorksSlider } from '../components/WorksSlider';
-import { DisplayTitle } from '../components/DisplayTitle';
-import { worksConfig } from '../config';
+import { featuredWorks, type Work, type WorkCategory } from '../works-data';
 
-gsap.registerPlugin(ScrollTrigger);
+type Filter = 'all' | WorkCategory;
 
-type WorksMode = 'grid' | 'slider';
+const filters: Array<{ value: Filter; label: string }> = [
+  { value: 'all', label: 'ALL' },
+  { value: 'feature', label: 'FEATURE' },
+  { value: 'short', label: 'SHORT' },
+  { value: 'documentary', label: 'DOCUMENTARY' },
+];
+
+function workAspect(work: Work) {
+  const match = work.format.match(/(\d+(?:\.\d+)?):1/);
+  return match ? `${match[1]} / 1` : '16 / 9';
+}
 
 export function Works() {
   const playSlate = useSlateNavigate();
-  const sectionRef = useRef<HTMLElement>(null);
-  const titleRef = useRef<HTMLHeadingElement>(null);
-  const subtitleRef = useRef<HTMLParagraphElement>(null);
-  const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const triggersRef = useRef<ScrollTrigger[]>([]);
-  const [mode, setMode] = useState<WorksMode>(() => {
-    try {
-      return sessionStorage.getItem('vk-works-mode') === 'slider'
-        ? 'slider'
-        : 'grid';
-    } catch {
-      return 'grid';
-    }
-  });
+  const [filter, setFilter] = useState<Filter>('all');
+  const filtered = useMemo(
+    () => featuredWorks.filter((work) => filter === 'all' || work.category === filter),
+    [filter]
+  );
+  const [activeSlug, setActiveSlug] = useState(featuredWorks[0].slug);
 
-  const switchMode = (next: WorksMode) => {
-    setMode(next);
-    try {
-      sessionStorage.setItem('vk-works-mode', next);
-    } catch {
-      /* storage unavailable — ignore */
-    }
-  };
+  const activeWork =
+    filtered.find((work) => work.slug === activeSlug) ?? filtered[0] ?? featuredWorks[0];
 
-  if (!worksConfig.title || worksConfig.projects.length === 0) return null;
-
-  useEffect(() => {
-    const section = sectionRef.current;
-    if (!section) return;
-
-    // Entry animation
-    const trigger = ScrollTrigger.create({
-      trigger: section,
-      start: 'top 80%',
-      onEnter: () => {
-        const tl = gsap.timeline();
-
-        // Title letter animation
-        if (titleRef.current) {
-          const chars = titleRef.current.querySelectorAll('.char');
-          tl.fromTo(
-            chars,
-            { scale: 0, opacity: 0 },
-            {
-              scale: 1,
-              opacity: 1,
-              duration: 0.6,
-              stagger: 0.08,
-              ease: 'elastic.out(1, 0.5)',
-            }
-          );
-        }
-
-        // Subtitle
-        tl.fromTo(
-          subtitleRef.current,
-          { y: 20, opacity: 0 },
-          { y: 0, opacity: 1, duration: 0.6, ease: 'power2.out' },
-          '-=0.3'
-        );
-
-        // Cards 3D flip — GRID 모드에서만
-        if (mode === 'grid') {
-          cardsRef.current.forEach((card, i) => {
-            if (card) {
-              tl.fromTo(
-                card,
-                { rotateY: i % 2 === 0 ? -180 : 180, opacity: 0 },
-                {
-                  rotateY: 0,
-                  opacity: 1,
-                  duration: 1,
-                  ease: 'expo.out',
-                },
-                `-=${0.85 - i * 0.15}`
-              );
-            }
-          });
-        }
-      },
-      once: true,
+  const openWork = (work: Work) => {
+    const index = featuredWorks.findIndex((item) => item.slug === work.slug);
+    playSlate(`/work/${work.slug}`, {
+      scene: `SCENE ${String(index + 1).padStart(2, '0')}`,
+      title: work.titleKo,
+      subtitle: `${work.titleEn} · ${work.year}`,
     });
-    triggersRef.current.push(trigger);
-
-if (window.matchMedia('(pointer: fine)').matches && mode === 'grid') {
-    // Scroll depth effect
-    const scrollTrigger = ScrollTrigger.create({
-      trigger: section,
-      start: 'top bottom',
-      end: 'bottom top',
-      scrub: 1,
-      onUpdate: (self) => {
-        cardsRef.current.forEach((card, i) => {
-          if (card) {
-            const depth = -50 + self.progress * 100;
-            gsap.set(card, {
-              z: depth * (i % 2 === 0 ? 1 : -1) * 0.5,
-            });
-          }
-        });
-      },
-    });
-    triggersRef.current.push(scrollTrigger);
-    }
-
-    return () => {
-      triggersRef.current.forEach((t) => t.kill());
-      triggersRef.current = [];
-    };
-  }, [mode]);
-
-  const handleMouseMove = (
-    e: React.MouseEvent<HTMLDivElement>,
-    index: number
-  ) => {
-    const card = cardsRef.current[index];
-    if (!card) return;
-
-    const rect = card.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5;
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
-
-    gsap.to(card, {
-      rotateX: -y * 10,
-      rotateY: x * 16,
-      duration: 0.1,
-      ease: 'none',
-    });
-  };
-
-  const handleMouseLeave = (index: number) => {
-    const card = cardsRef.current[index];
-    if (!card) return;
-
-    gsap.to(card, {
-      rotateX: 0,
-      rotateY: 0,
-      duration: 0.4,
-      ease: 'expo.out',
-    });
-    setHoveredIndex(null);
   };
 
   return (
-    <section
-      ref={sectionRef}
-      id="works"
-      className="relative py-32 px-8 lg:px-16 bg-[#0d1112] overflow-hidden"
-      style={{ perspective: '1200px' }}
-    >
-      {/* Header */}
-      <div className="max-w-7xl mx-auto mb-16">
-        <div className="flex flex-wrap items-end justify-between gap-6 mb-6">
-          <h2
-            ref={titleRef}
-            className="text-h1 lg:text-display-xl text-white font-medium"
-          >
-            <DisplayTitle text={worksConfig.title} />
-          </h2>
+    <section id="works" className="bg-black px-5 py-24 text-white sm:px-8 lg:py-32">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-14 grid gap-8 border-t border-white/20 pt-6 lg:grid-cols-[1fr_auto] lg:items-end">
+          <div>
+            <p className="mb-6 font-mono text-[10px] tracking-[0.28em] text-white/40">
+              02 · SELECTED WORKS
+            </p>
+            <h2 className="font-display-serif text-[clamp(4.8rem,11vw,10rem)] leading-[0.78] tracking-[-0.065em]">
+              <span className="italic">W</span>ORKS
+            </h2>
+          </div>
+          <div className="flex flex-wrap gap-x-5 gap-y-3" aria-label="작품 필터">
+            {filters.map((item) => (
+              <button
+                key={item.value}
+                type="button"
+                onClick={() => {
+                  setFilter(item.value);
+                  const nextActive = featuredWorks.find(
+                    (work) => item.value === 'all' || work.category === item.value
+                  );
+                  if (nextActive) setActiveSlug(nextActive.slug);
+                }}
+                className={`border-b pb-1 font-mono text-[10px] tracking-[0.2em] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-highlight ${
+                  filter === item.value
+                    ? 'border-highlight text-highlight'
+                    : 'border-transparent text-white/40 hover:text-white'
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </div>
 
-          {/* GRID / SLIDER 토글 */}
-          <div className="flex items-center gap-3 font-mono text-[11px] tracking-[0.3em]">
+        <div className="hidden grid-cols-[0.9fr_1.25fr] gap-10 lg:grid">
+          <div className="border-t border-white/15">
+            {filtered.map((work, index) => {
+              const active = work.slug === activeWork.slug;
+              return (
+                <button
+                  key={work.slug}
+                  type="button"
+                  onMouseEnter={() => setActiveSlug(work.slug)}
+                  onFocus={() => setActiveSlug(work.slug)}
+                  onClick={() => openWork(work)}
+                  className={`group grid w-full grid-cols-[3rem_1fr_auto] items-center gap-4 border-b border-white/15 py-6 text-left transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-highlight ${
+                    active ? 'bg-[#ecebe6] px-5 text-black' : 'text-white hover:bg-white/[0.04]'
+                  }`}
+                >
+                  <span className={`font-mono text-[10px] tracking-[0.18em] ${active ? 'text-black/45' : 'text-white/35'}`}>
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                  <span>
+                    <span className="block text-2xl font-medium tracking-[-0.04em]">{work.titleKo}</span>
+                    <span className={`mt-1 block font-mono text-[10px] tracking-[0.16em] ${active ? 'text-black/50' : 'text-white/35'}`}>
+                      {work.titleEn} · {work.year} · {work.categoryLabel}
+                    </span>
+                  </span>
+                  <ArrowUpRight className={`h-4 w-4 ${active ? 'text-black' : 'text-white/30 group-hover:text-highlight'}`} />
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="sticky top-28 self-start">
             <button
-              onClick={() => switchMode('grid')}
+              key={activeWork.slug}
+              type="button"
+              onClick={() => openWork(activeWork)}
               data-cursor
-              className={`transition-colors duration-300 cursor-pointer ${
-                mode === 'grid'
-                  ? 'text-highlight'
-                  : 'text-white/40 hover:text-white'
-              }`}
+              className="cut-in group relative block w-full overflow-hidden bg-[#0b0f10] text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-highlight"
+              style={{ aspectRatio: workAspect(activeWork) }}
+              aria-label={`${activeWork.titleKo} 상세 보기`}
             >
-              GRID
-            </button>
-            <span className="text-white/20">/</span>
-            <button
-              onClick={() => switchMode('slider')}
-              data-cursor
-              className={`transition-colors duration-300 cursor-pointer ${
-                mode === 'slider'
-                  ? 'text-highlight'
-                  : 'text-white/40 hover:text-white'
-              }`}
-            >
-              SLIDER
+              <img
+                src={activeWork.stills[0]}
+                alt={`${activeWork.titleKo} 대표 스틸`}
+                className="h-full w-full object-contain transition-transform group-hover:scale-[1.025]"
+                style={{ transitionDuration: '6000ms' }}
+              />
+              <span className="absolute inset-x-0 bottom-0 flex items-end justify-between bg-black/70 px-5 py-4 backdrop-blur-sm">
+                <span>
+                  <span className="block text-xl font-medium">{activeWork.titleKo}</span>
+                  <span className="mt-1 block font-mono text-[9px] tracking-[0.18em] text-white/55">
+                    DIR. {activeWork.director} · {activeWork.format}
+                  </span>
+                </span>
+                <span className="font-mono text-[10px] tracking-[0.18em] text-highlight">VIEW FRAME ↗</span>
+              </span>
             </button>
           </div>
         </div>
-        <p
-          ref={subtitleRef}
-          className="text-body-lg text-white/60 max-w-2xl"
-        >
-          {worksConfig.subtitle}
-        </p>
-      </div>
 
-      {mode === 'slider' ? (
-        /* SLIDER 모드 — 풀스크린 작품 슬라이더 (풀블리드) */
-        <div className="-mx-8 lg:-mx-16">
-          <WorksSlider />
-        </div>
-      ) : (
-      /* Projects Grid - Scattered mosaic */
-      <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
-          {worksConfig.projects.map((project, index) => (
-            <div
-              role="link"
-              tabIndex={0}
-              onClick={() =>
-                playSlate(`/work/${project.slug}`, {
-                  scene: `SCENE ${String(project.id).padStart(2, '0')}`,
-                  title: project.title,
-                  subtitle: project.category,
-                })
-              }
-              onKeyDown={(e) =>
-                e.key === 'Enter' &&
-                playSlate(`/work/${project.slug}`, {
-                  scene: `SCENE ${String(project.id).padStart(2, '0')}`,
-                  title: project.title,
-                  subtitle: project.category,
-                })
-              }
-              key={project.id}
-              className="block cursor-pointer"
+        <div className="space-y-12 lg:hidden">
+          {filtered.map((work, index) => (
+            <button
+              key={work.slug}
+              type="button"
+              onClick={() => openWork(work)}
+              className="block w-full border-t border-white/20 pt-4 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-highlight"
             >
-            <div
-              key={project.id}
-              ref={(el) => {
-                cardsRef.current[index] = el;
-              }}
-              className={`relative group cursor-pointer preserve-3d ${
-                index === 0 ? 'md:col-span-1 md:row-span-1' : ''
-              } ${index % 2 === 0 ? 'md:-translate-y-8' : 'md:translate-y-8'}`}
-              style={{
-                transformStyle: 'preserve-3d',
-                willChange: 'transform',
-                transform:
-                  hoveredIndex !== null && hoveredIndex !== index
-                    ? `translateX(${(index - hoveredIndex) * 15}px)`
-                    : 'translateX(0)',
-                transition:
-                  hoveredIndex !== null
-                    ? 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
-                    : 'none',
-              }}
-              onMouseMove={(e) => handleMouseMove(e, index)}
-              onMouseEnter={() => setHoveredIndex(index)}
-              onMouseLeave={() => handleMouseLeave(index)}
-            >
-              {/* Card content */}
-              <div className="relative aspect-[3/4] overflow-hidden bg-dark-gray">
-                <img
-                  src={project.image}
-                  alt={project.title}
-                  className="w-full h-full object-cover transition-all duration-600 group-hover:scale-110 group-hover:brightness-110"
-                />
-
-                {/* Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-300" />
-
-                {/* Content */}
-                <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-8">
-                  <p className="text-body-sm text-white/60 mb-2 group-hover:text-highlight transition-colors duration-300">
-                    {project.category}
-                  </p>
-                  <h3 className="text-h4 lg:text-h3 text-white font-medium group-hover:-translate-y-1 transition-transform duration-300">
-                    {project.title}
-                  </h3>
-                </div>
-
-                {/* Arrow icon */}
-                <div className="absolute top-6 right-6">
-                  <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center group-hover:bg-highlight group-hover:scale-115 transition-all duration-300">
-                    <ArrowUpRight className="w-5 h-5 text-white group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300" />
-                  </div>
-                </div>
-              </div>
-            </div>
-            </div>
+              <span className="mb-4 flex items-center justify-between font-mono text-[10px] tracking-[0.18em] text-white/45">
+                <span>{String(index + 1).padStart(2, '0')} · {work.categoryLabel.toUpperCase()}</span>
+                <span>{work.year}</span>
+              </span>
+              <img
+                src={work.stills[0]}
+                alt={`${work.titleKo} 대표 스틸`}
+                className="h-auto w-full bg-[#0b0f10] object-contain"
+                loading={index < 2 ? 'eager' : 'lazy'}
+              />
+              <span className="mt-4 flex items-end justify-between gap-5">
+                <span>
+                  <span className="block text-3xl font-medium tracking-[-0.045em]">{work.titleKo}</span>
+                  <span className="mt-1 block font-mono text-[9px] tracking-[0.16em] text-white/40">{work.titleEn} · {work.format}</span>
+                </span>
+                <ArrowUpRight className="h-5 w-5 text-highlight" />
+              </span>
+            </button>
           ))}
         </div>
       </div>
-      )}
-
-      {/* Decorative elements */}
-      <div className="absolute top-20 left-0 w-32 h-32 bg-highlight/5 -translate-x-1/2" />
-      <div className="absolute bottom-20 right-0 w-48 h-48 bg-white/5 translate-x-1/3" />
     </section>
   );
 }

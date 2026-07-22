@@ -1,56 +1,55 @@
 import { useEffect, useRef, useState } from 'react';
-import { useParams, Link } from 'react-router';
-import gsap from 'gsap';
-import { ArrowLeft, Play, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Link, useParams } from 'react-router';
+import { ArrowLeft, ArrowUpRight, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { works } from '../works-data';
-import { GradeSlider } from '../components/GradeSlider';
-import { TimecodeGallery } from '../components/TimecodeGallery';
 import { useSlateNavigate } from '../components/Slate';
 
 export default function WorkDetail() {
-  const playSlate = useSlateNavigate();
   const { slug } = useParams<{ slug: string }>();
-  const work = works.find((w) => w.slug === slug);
-  const heroRef = useRef<HTMLDivElement>(null);
+  const work = works.find((item) => item.slug === slug);
+  const playSlate = useSlateNavigate();
   const [lightbox, setLightbox] = useState<number | null>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    window.scrollTo(0, 0);
-    if (heroRef.current) {
-      // 시그니처 '느린 푸쉬인' — 히어로 스틸이 천천히 줌인
-      gsap.fromTo(
-        heroRef.current,
-        { scale: 1 },
-        { scale: 1.12, duration: 14, ease: 'none' }
-      );
-    }
+    window.scrollTo({ top: 0, behavior: 'instant' });
   }, [slug]);
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
+    if (lightbox !== null) closeButtonRef.current?.focus();
+  }, [lightbox]);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
       if (lightbox === null || !work) return;
-      if (e.key === 'Escape') setLightbox(null);
-      if (e.key === 'ArrowRight')
-        setLightbox((i) => (i === null ? null : (i + 1) % work.stills.length));
-      if (e.key === 'ArrowLeft')
-        setLightbox((i) =>
-          i === null ? null : (i - 1 + work.stills.length) % work.stills.length
-        );
+      if (event.key === 'Escape') setLightbox(null);
+      if (event.key === 'ArrowRight') {
+        setLightbox((lightbox + 1) % work.stills.length);
+      }
+      if (event.key === 'ArrowLeft') {
+        setLightbox((lightbox - 1 + work.stills.length) % work.stills.length);
+      }
     };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
   }, [lightbox, work]);
 
   if (!work) {
     return (
-      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center gap-6">
-        <p className="text-white/60">작품을 찾을 수 없습니다.</p>
-        <Link to="/" className="text-highlight hover:underline">
-          홈으로 돌아가기
+      <main className="flex min-h-screen flex-col items-center justify-center gap-6 bg-black text-white">
+        <p className="text-white/55">작품을 찾을 수 없습니다.</p>
+        <Link to="/#works" className="text-highlight underline underline-offset-4">
+          작품 목록으로 돌아가기
         </Link>
-      </div>
+      </main>
     );
   }
+
+  const verifiedSpecs = work.specs.filter(
+    (spec) => spec.value.trim() && !spec.value.includes('확인 필요')
+  );
+  const currentIndex = works.findIndex((item) => item.slug === work.slug);
+  const next = works[(currentIndex + 1) % works.length];
 
   const videoEmbed = (url: string) => {
     if (url.includes('vimeo.com')) {
@@ -67,232 +66,151 @@ export default function WorkDetail() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      {/* Top bar */}
-      <header className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 lg:px-16 py-5 bg-gradient-to-b from-black/80 to-transparent">
+    <main className="min-h-screen bg-black text-white">
+      <header className="fixed inset-x-0 top-0 z-40 flex items-center justify-between bg-black/80 px-5 py-4 backdrop-blur-md sm:px-8 lg:px-12">
         <Link
-          to="/"
-          className="flex items-center gap-2 text-white/70 hover:text-highlight transition-colors text-sm tracking-widest"
+          to="/#works"
+          className="flex items-center gap-2 font-mono text-[10px] tracking-[0.2em] text-white/65 transition-colors hover:text-highlight focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-highlight"
         >
-          <ArrowLeft className="w-4 h-4" /> WORKS
+          <ArrowLeft className="h-4 w-4" /> WORKS
         </Link>
-        <span className="text-white/40 text-sm tracking-widest hidden sm:block">
-          VIO KIM — CINEMATOGRAPHER
+        <span className="hidden font-mono text-[9px] tracking-[0.2em] text-white/35 sm:block">
+          VIO KIM · DIRECTOR OF PHOTOGRAPHY
         </span>
       </header>
 
-      {/* Hero — 2.39:1 레터박스 + 슬로우 줌인 */}
-      <section className="relative h-[70vh] md:h-[85vh] overflow-hidden flex items-center">
-        <div ref={heroRef} className="absolute inset-0 will-change-transform">
-          <img
-            src={work.stills[0]}
-            alt={work.titleKo}
-            className="w-full h-full object-cover"
-          />
+      <section className="relative flex min-h-[82svh] items-end overflow-hidden px-4 pb-6 pt-24 sm:px-8 sm:pb-8">
+        <div className="detail-still-push absolute inset-0">
+          <img src={work.stills[0]} alt={`${work.titleKo} 대표 스틸`} className="h-full w-full object-cover" />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-black/40" />
-        <div className="relative z-10 w-full px-6 lg:px-16 max-w-7xl mx-auto">
-          <p className="text-highlight text-sm tracking-[0.3em] mb-4">
-            {work.year} · {work.categoryLabel} · {work.runtime}
-          </p>
-          <h1 className="text-5xl md:text-8xl font-medium tracking-tight">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-black/35" aria-hidden="true" />
+
+        <div className="controlled-panel panel-enter relative z-10 w-full max-w-4xl bg-[#ecebe6] p-5 text-black shadow-[0_30px_90px_rgba(0,0,0,0.45)] sm:p-8 lg:p-10">
+          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-black/15 pb-4 font-mono text-[9px] tracking-[0.2em] text-black/45">
+            <span>{String(currentIndex + 1).padStart(2, '0')} · {work.categoryLabel.toUpperCase()}</span>
+            <span>{work.year} · {work.format}</span>
+          </div>
+          <h1 className="mt-9 text-[clamp(3.5rem,9vw,8rem)] font-semibold leading-[0.78] tracking-[-0.075em]">
             {work.titleKo}
           </h1>
-          <p className="text-xl md:text-3xl text-white/60 font-extralight tracking-widest mt-2">
+          <p className="mt-5 font-display-serif text-2xl italic tracking-[-0.03em] text-black/55 sm:text-4xl">
             {work.titleEn}
           </p>
+          <div className="mt-10 grid grid-cols-2 gap-x-6 gap-y-4 border-t border-black/15 pt-5 font-mono text-[9px] tracking-[0.15em] text-black/55 sm:grid-cols-4">
+            <span>ROLE<br /><strong className="mt-1 block font-medium text-black">{work.role}</strong></span>
+            <span>DIRECTOR<br /><strong className="mt-1 block font-medium text-black">{work.director}</strong></span>
+            <span>GENRE<br /><strong className="mt-1 block font-medium text-black">{work.genre}</strong></span>
+            <span>RUNTIME<br /><strong className="mt-1 block font-medium text-black">{work.runtime}</strong></span>
+          </div>
         </div>
       </section>
 
-      {/* Meta strip */}
-      <section className="border-y border-white/10">
-        <div className="max-w-7xl mx-auto px-6 lg:px-16 py-8 grid grid-cols-2 md:grid-cols-4 gap-6 text-sm">
-          <div>
-            <p className="text-white/40 tracking-widest mb-1">ROLE</p>
-            <p>{work.role}</p>
-          </div>
-          <div>
-            <p className="text-white/40 tracking-widest mb-1">DIRECTOR</p>
-            <p>{work.director}</p>
-          </div>
-          <div>
-            <p className="text-white/40 tracking-widest mb-1">GENRE</p>
-            <p>{work.genre}</p>
-          </div>
-          <div>
-            <p className="text-white/40 tracking-widest mb-1">FORMAT</p>
-            <p>{work.format}</p>
-          </div>
+      {work.note && (
+        <div className="mx-auto max-w-7xl px-5 pt-12 sm:px-8">
+          <span className="inline-block border border-highlight/70 px-4 py-2 font-mono text-[9px] tracking-[0.2em] text-highlight">
+            {work.note}
+          </span>
         </div>
-        {work.note && (
-          <div className="max-w-7xl mx-auto px-6 lg:px-16 pb-6">
-            <span className="inline-block border border-highlight/60 text-highlight text-xs tracking-[0.2em] px-4 py-2">
-              {work.note}
-            </span>
-          </div>
-        )}
-      </section>
+      )}
 
-      {/* Production specs */}
-      {work.specs.length > 0 && (
-        <section className="max-w-7xl mx-auto px-6 lg:px-16 pt-14">
-          <h2 className="text-sm tracking-[0.3em] text-white/40 mb-8">
-            PRODUCTION SPECS
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-8">
-            {work.specs.map((s) => (
-              <div key={s.label}>
-                <p className="text-highlight text-xs tracking-[0.25em] mb-2">
-                  {s.label}
-                </p>
-                <p className="text-white/85 font-light">{s.value}</p>
+      {(work.synopsis || work.intent) && (
+        <section className="mx-auto grid max-w-7xl gap-px bg-white/15 px-5 py-16 sm:px-8 lg:grid-cols-2 lg:py-24">
+          {work.synopsis && (
+            <article className="bg-black p-7 sm:p-10">
+              <p className="mb-7 font-mono text-[10px] tracking-[0.25em] text-highlight">SYNOPSIS</p>
+              <p className="text-lg font-light leading-relaxed text-white/75 sm:text-xl">{work.synopsis}</p>
+            </article>
+          )}
+          {work.intent && (
+            <article className="bg-[#ecebe6] p-7 text-black sm:p-10">
+              <p className="mb-7 font-mono text-[10px] tracking-[0.25em] text-black/45">CINEMATOGRAPHY NOTE</p>
+              <p className="text-lg font-light leading-relaxed text-black/70 sm:text-xl">{work.intent}</p>
+            </article>
+          )}
+        </section>
+      )}
+
+      {verifiedSpecs.length > 0 && (
+        <section className="mx-auto max-w-7xl border-y border-white/15 px-5 py-10 sm:px-8">
+          <p className="mb-8 font-mono text-[10px] tracking-[0.25em] text-white/35">VERIFIED PRODUCTION SPECS</p>
+          <div className="grid grid-cols-2 gap-x-8 gap-y-7 md:grid-cols-3 lg:grid-cols-4">
+            {verifiedSpecs.map((spec) => (
+              <div key={spec.label}>
+                <p className="font-mono text-[9px] tracking-[0.2em] text-highlight">{spec.label}</p>
+                <p className="mt-2 text-sm text-white/75">{spec.value}</p>
               </div>
             ))}
           </div>
         </section>
       )}
 
-      {/* Video — 추후 video 필드에 URL 추가 시 자동 임베드 */}
-      <section className="max-w-7xl mx-auto px-6 lg:px-16 py-16">
-        {work.video ? (
-          <div className="aspect-[2.39/1] w-full bg-black">
-            <iframe
-              src={videoEmbed(work.video)}
-              className="w-full h-full"
-              allow="autoplay; fullscreen; picture-in-picture"
-              allowFullScreen
-              title={work.titleKo}
-            />
+      {work.video && (
+        <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:py-24">
+          <p className="mb-6 font-mono text-[10px] tracking-[0.25em] text-white/35">FILM</p>
+          <div className="aspect-video bg-[#0b0f10]">
+            <iframe src={videoEmbed(work.video)} className="h-full w-full" allow="autoplay; fullscreen; picture-in-picture" allowFullScreen title={`${work.titleKo} 영상`} />
           </div>
-        ) : (
-          <div className="relative aspect-[2.39/1] w-full overflow-hidden group cursor-default">
-            <img
-              src={work.stills[1] ?? work.stills[0]}
-              alt=""
-              className="w-full h-full object-cover opacity-40"
-            />
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
-              <div className="w-16 h-16 rounded-full border border-white/30 flex items-center justify-center">
-                <Play className="w-6 h-6 text-white/60 ml-1" />
-              </div>
-              <p className="text-white/50 tracking-[0.3em] text-sm">
-                FILM COMING SOON
-              </p>
-            </div>
-          </div>
-        )}
-      </section>
-
-      {/* LOOK — LOG vs GRADE 비교 */}
-      <section className="max-w-7xl mx-auto px-6 lg:px-16 pb-16">
-        <h2 className="text-sm tracking-[0.3em] text-white/40 mb-3">
-          LOOK — LOG vs GRADE
-        </h2>
-        <p className="text-white/50 text-sm font-light mb-8">
-          슬라이더를 드래그해 촬영 원본(LOG)과 최종 그레이딩을 비교해 보세요.
-        </p>
-        <GradeSlider
-          src={work.stills[1] ?? work.stills[0]}
-          alt={`${work.titleKo} 그레이딩 비교`}
-        />
-      </section>
-
-      {/* Synopsis & Intent */}
-      {(work.synopsis || work.intent) && (
-        <section className="max-w-7xl mx-auto px-6 lg:px-16 pb-16 grid md:grid-cols-2 gap-12">
-          {work.synopsis && (
-            <div>
-              <h2 className="text-highlight text-sm tracking-[0.3em] mb-6">
-                SYNOPSIS
-              </h2>
-              <p className="text-white/80 leading-relaxed text-lg font-light">
-                {work.synopsis}
-              </p>
-            </div>
-          )}
-          {work.intent && (
-            <div>
-              <h2 className="text-[#c13a6b] text-sm tracking-[0.3em] mb-6">
-                CINEMATOGRAPHY NOTE
-              </h2>
-              <p className="text-white/80 leading-relaxed text-lg font-light">
-                {work.intent}
-              </p>
-            </div>
-          )}
         </section>
       )}
 
-      {/* Quote */}
+      <section className="px-5 py-20 sm:px-8 lg:py-28">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-14 flex flex-col gap-5 border-t border-white/15 pt-6 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="mb-5 font-mono text-[10px] tracking-[0.25em] text-white/35">FRAME STUDY</p>
+              <h2 className="font-display-serif text-[clamp(4.2rem,9vw,8rem)] leading-[0.8] tracking-[-0.06em]">
+                SELECTED <span className="italic text-highlight">CUTS</span>
+              </h2>
+            </div>
+            <p className="max-w-sm text-sm leading-relaxed text-white/45">영상 대신 장면의 빛, 구도, 색을 스틸의 원래 비율로 살펴봅니다.</p>
+          </div>
+
+          <div className="grid items-start gap-x-5 gap-y-14 md:grid-cols-12">
+            {work.stills.map((still, index) => {
+              const layout = index % 4;
+              const columnClass = layout === 0 || layout === 3 ? 'md:col-span-8' : 'md:col-span-4';
+              return (
+                <figure key={still} className={columnClass}>
+                  <button
+                    type="button"
+                    onClick={() => setLightbox(index)}
+                    data-cursor
+                    className="group block w-full bg-[#0b0f10] text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-highlight"
+                    aria-label={`${work.titleKo} 스틸 ${index + 1} 확대`}
+                  >
+                    <img src={still} alt={`${work.titleKo} 스틸 ${index + 1}`} className="h-auto w-full object-contain transition-opacity group-hover:opacity-80" loading={index < 2 ? 'eager' : 'lazy'} />
+                  </button>
+                  <figcaption className="mt-3 flex justify-between font-mono text-[9px] tracking-[0.17em] text-white/35">
+                    <span>CUT {String(index + 1).padStart(2, '0')}</span>
+                    <span>{work.format}</span>
+                  </figcaption>
+                </figure>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
       {work.quote && (
-        <section className="max-w-5xl mx-auto px-6 lg:px-16 pb-20">
-          <blockquote className="border-l-2 border-highlight pl-8">
-            <p className="text-xl md:text-2xl font-extralight leading-relaxed text-white/90 italic">
-              “{work.quote}”
-            </p>
-            <cite className="block mt-4 text-white/50 text-sm tracking-widest not-italic">
-              — {work.quoteSource}
-            </cite>
+        <section className="bg-[#ecebe6] px-5 py-20 text-black sm:px-8 lg:py-28">
+          <blockquote className="mx-auto max-w-5xl">
+            <p className="font-display-serif text-[clamp(2.4rem,5vw,5.5rem)] italic leading-[1.05] tracking-[-0.045em]">“{work.quote}”</p>
+            <cite className="mt-8 block font-mono text-[10px] tracking-[0.2em] text-black/45 not-italic">— {work.quoteSource}</cite>
           </blockquote>
         </section>
       )}
 
-      {/* Stills — 타임코드 스크럽 갤러리 */}
-      <div className="pb-10">
-        <TimecodeGallery
-          stills={work.stills}
-          title={work.titleEn}
-          onSelect={(i) => setLightbox(i)}
-        />
-      </div>
-
-      {/* Awards & Invitations & Credits */}
-      <section className="border-t border-white/10">
-        <div className="max-w-7xl mx-auto px-6 lg:px-16 py-16 grid md:grid-cols-3 gap-12">
+      <section className="border-t border-white/15 px-5 py-16 sm:px-8 lg:py-24">
+        <div className="mx-auto grid max-w-7xl gap-12 md:grid-cols-3">
+          <DetailList title="AWARDS" items={work.awards} />
+          <DetailList title="FESTIVALS" items={work.invitations} />
           <div>
-            <h2 className="text-sm tracking-[0.3em] text-white/40 mb-6">
-              AWARDS
-            </h2>
-            {work.awards.length > 0 ? (
-              <ul className="space-y-3">
-                {work.awards.map((f) => (
-                  <li key={f} className="text-white/85 font-light">
-                    {f}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-white/30 font-light">—</p>
-            )}
-          </div>
-          <div>
-            <h2 className="text-sm tracking-[0.3em] text-white/40 mb-6">
-              FESTIVALS
-            </h2>
-            {work.invitations.length > 0 ? (
-              <ul className="space-y-3">
-                {work.invitations.map((f) => (
-                  <li key={f} className="text-white/85 font-light">
-                    {f}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-white/30 font-light">—</p>
-            )}
-          </div>
-          <div>
-            <h2 className="text-sm tracking-[0.3em] text-white/40 mb-6">
-              CREDITS
-            </h2>
+            <h2 className="mb-6 font-mono text-[10px] tracking-[0.25em] text-white/35">CREDITS</h2>
             <ul className="space-y-3">
-              {work.credits.map((c) => (
-                <li
-                  key={c.role}
-                  className="flex justify-between max-w-sm text-white/85 font-light"
-                >
-                  <span className="text-white/40 shrink-0 mr-6">{c.role}</span>
-                  <span>{c.name}</span>
+              {work.credits.map((credit) => (
+                <li key={`${credit.role}-${credit.name}`} className="flex justify-between gap-5 border-b border-white/10 pb-3 text-sm">
+                  <span className="text-white/35">{credit.role}</span>
+                  <span className="text-right text-white/75">{credit.name}</span>
                 </li>
               ))}
             </ul>
@@ -300,81 +218,49 @@ export default function WorkDetail() {
         </div>
       </section>
 
-      {/* Next work */}
-      {(() => {
-        const idx = works.findIndex((w) => w.slug === slug);
-        const next = works[(idx + 1) % works.length];
-        return (
-          <button
-            onClick={() =>
-              playSlate(`/work/${next.slug}`, {
-                scene: `SCENE ${String(idx + 2).padStart(2, '0')}`,
-                title: next.titleKo,
-                subtitle: next.titleEn,
-              })
-            }
-            className="block w-full text-left border-t border-white/10 group cursor-pointer"
-          >
-            <div className="max-w-7xl mx-auto px-6 lg:px-16 py-14 flex items-center justify-between">
-              <div>
-                <p className="text-white/40 text-sm tracking-[0.3em] mb-2">
-                  NEXT WORK
-                </p>
-                <p className="text-3xl md:text-5xl font-medium group-hover:text-highlight transition-colors">
-                  {next.titleKo}
-                </p>
-              </div>
-              <ChevronRight className="w-8 h-8 text-white/40 group-hover:text-highlight group-hover:translate-x-2 transition-all" />
-            </div>
-          </button>
-        );
-      })()}
-
-      {/* Lightbox */}
-      {lightbox !== null && (
-        <div
-          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center"
-          onClick={() => setLightbox(null)}
-        >
-          <button
-            className="absolute top-6 right-6 text-white/60 hover:text-white"
-            onClick={() => setLightbox(null)}
-            aria-label="닫기"
-          >
-            <X className="w-7 h-7" />
-          </button>
-          <button
-            className="absolute left-4 md:left-10 text-white/60 hover:text-highlight"
-            onClick={(e) => {
-              e.stopPropagation();
-              setLightbox(
-                (lightbox - 1 + work.stills.length) % work.stills.length
-              );
-            }}
-            aria-label="이전"
-          >
-            <ChevronLeft className="w-10 h-10" />
-          </button>
-          <img
-            src={work.stills[lightbox]}
-            alt=""
-            className="max-w-[92vw] max-h-[85vh] object-contain"
-            onClick={(e) => e.stopPropagation()}
-          />
-          <button
-            className="absolute right-4 md:right-10 text-white/60 hover:text-highlight"
-            onClick={(e) => {
-              e.stopPropagation();
-              setLightbox((lightbox + 1) % work.stills.length);
-            }}
-            aria-label="다음"
-          >
-            <ChevronRight className="w-10 h-10" />
-          </button>
-          <span className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/40 text-sm tracking-widest">
-            {lightbox + 1} / {work.stills.length}
+      <button
+        type="button"
+        onClick={() => playSlate(`/work/${next.slug}`, { scene: `SCENE ${String(currentIndex + 2).padStart(2, '0')}`, title: next.titleKo, subtitle: `${next.titleEn} · ${next.year}` })}
+        className="group block w-full border-t border-white/15 px-5 py-14 text-left transition-colors hover:bg-[#ecebe6] hover:text-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-highlight sm:px-8 lg:py-20"
+      >
+        <span className="mx-auto flex max-w-7xl items-end justify-between gap-8">
+          <span>
+            <span className="mb-3 block font-mono text-[10px] tracking-[0.25em] text-white/35 group-hover:text-black/45">NEXT WORK</span>
+            <span className="block text-[clamp(2.5rem,6vw,6rem)] font-medium leading-none tracking-[-0.055em]">{next.titleKo}</span>
           </span>
+          <ArrowUpRight className="h-7 w-7 shrink-0 text-highlight transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
+        </span>
+      </button>
+
+      {lightbox !== null && (
+        <div role="dialog" aria-modal="true" aria-label={`${work.titleKo} 스틸 확대 보기`} className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-4 sm:p-10" onMouseDown={(event) => { if (event.currentTarget === event.target) setLightbox(null); }}>
+          <button ref={closeButtonRef} type="button" onClick={() => setLightbox(null)} className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center border border-white/25 text-white/65 hover:border-highlight hover:text-highlight focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-highlight sm:right-8 sm:top-8" aria-label="확대 보기 닫기">
+            <X className="h-5 w-5" />
+          </button>
+          <button type="button" onClick={() => setLightbox((lightbox - 1 + work.stills.length) % work.stills.length)} className="absolute left-3 flex h-11 w-11 items-center justify-center bg-black/70 text-white/65 hover:text-highlight focus-visible:outline focus-visible:outline-2 focus-visible:outline-highlight sm:left-8" aria-label="이전 스틸">
+            <ChevronLeft className="h-7 w-7" />
+          </button>
+          <img src={work.stills[lightbox]} alt={`${work.titleKo} 스틸 ${lightbox + 1} 확대`} className="max-h-[82vh] max-w-[92vw] object-contain" />
+          <button type="button" onClick={() => setLightbox((lightbox + 1) % work.stills.length)} className="absolute right-3 flex h-11 w-11 items-center justify-center bg-black/70 text-white/65 hover:text-highlight focus-visible:outline focus-visible:outline-2 focus-visible:outline-highlight sm:right-8" aria-label="다음 스틸">
+            <ChevronRight className="h-7 w-7" />
+          </button>
+          <span className="absolute bottom-5 font-mono text-[9px] tracking-[0.2em] text-white/40">CUT {String(lightbox + 1).padStart(2, '0')} / {String(work.stills.length).padStart(2, '0')}</span>
         </div>
+      )}
+    </main>
+  );
+}
+
+function DetailList({ title, items }: { title: string; items: string[] }) {
+  return (
+    <div>
+      <h2 className="mb-6 font-mono text-[10px] tracking-[0.25em] text-white/35">{title}</h2>
+      {items.length ? (
+        <ul className="space-y-3 text-sm leading-relaxed text-white/75">
+          {items.map((item) => <li key={item} className="border-b border-white/10 pb-3">{item}</li>)}
+        </ul>
+      ) : (
+        <p className="text-sm text-white/25">—</p>
       )}
     </div>
   );

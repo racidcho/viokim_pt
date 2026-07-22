@@ -1,117 +1,86 @@
-import { useEffect, useRef, useState } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useEffect, useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { navigationConfig } from '../config';
 
-gsap.registerPlugin(ScrollTrigger);
-
 export function Navigation() {
-  const navRef = useRef<HTMLElement>(null);
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  if (!navigationConfig.logo) return null;
+  const [visible, setVisible] = useState(false);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    const trigger = ScrollTrigger.create({
-      start: '100px top',
-      end: 'max',
-      onUpdate: (self) => {
-        setIsScrolled(self.progress > 0);
-      },
-    });
-
-    return () => {
-      trigger.kill();
-    };
+    const onScroll = () => setVisible(window.scrollY > window.innerHeight * 0.68);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    e.preventDefault();
-    const target = document.querySelector(href);
-    if (target) {
-      target.scrollIntoView({ behavior: 'smooth' });
-      setIsMobileMenuOpen(false);
-    }
-  };
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open]);
 
   return (
     <>
-      <nav
-        ref={navRef}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          isScrolled
-            ? 'bg-black/80 backdrop-blur-md py-4'
-            : 'bg-transparent py-6'
+      <header
+        className={`fixed inset-x-0 top-0 z-50 px-3 pt-3 transition-[transform,opacity] sm:px-6 sm:pt-4 ${
+          visible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'
         }`}
+        style={{ transitionDuration: '420ms' }}
       >
-        <div className="max-w-7xl mx-auto px-8 lg:px-16 flex items-center justify-between">
-          {/* Logo */}
+        <div className="mx-auto flex max-w-7xl items-center justify-between border border-black/15 bg-[#ecebe6]/95 px-5 py-4 text-black backdrop-blur-md sm:px-7">
           <a
             href="#hero"
-            onClick={(e) => handleNavClick(e, '#hero')}
-            className="text-h6 font-medium text-white hover:text-highlight transition-colors duration-300"
+            className="text-xl font-semibold tracking-[-0.04em] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-highlight"
           >
-            {navigationConfig.logo}
+            VIO <span className="bg-highlight px-1">KIM</span>
           </a>
 
-          {/* Desktop nav */}
-          <div className="hidden lg:flex items-center gap-10">
+          <nav aria-label="고정 메뉴" className="hidden items-center gap-8 lg:flex">
             {navigationConfig.items.map((item) => (
               <a
-                key={item.label}
+                key={item.href}
                 href={item.href}
-                onClick={(e) => handleNavClick(e, item.href)}
-                className="text-body text-white/70 hover:text-white transition-colors duration-300 relative group"
+                className="text-[11px] font-medium tracking-[0.12em] text-black/60 transition-colors hover:text-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-highlight"
               >
                 {item.label}
-                <span className="absolute -bottom-1 left-0 w-0 h-px bg-highlight group-hover:w-full transition-all duration-300" />
               </a>
             ))}
-          </div>
+          </nav>
 
-          {/* Mobile menu button */}
           <button
-            className="lg:hidden w-10 h-10 flex items-center justify-center text-white"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            type="button"
+            aria-label={open ? '메뉴 닫기' : '메뉴 열기'}
+            aria-expanded={open}
+            onClick={() => setOpen((value) => !value)}
+            className="flex h-10 w-10 items-center justify-center lg:hidden"
           >
-            {isMobileMenuOpen ? (
-              <X className="w-6 h-6" />
-            ) : (
-              <Menu className="w-6 h-6" />
-            )}
+            {open ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
           </button>
         </div>
-      </nav>
+      </header>
 
-      {/* Mobile menu */}
       <div
-        className={`fixed inset-0 z-40 bg-black transition-all duration-500 lg:hidden ${
-          isMobileMenuOpen
-            ? 'opacity-100 pointer-events-auto'
-            : 'opacity-0 pointer-events-none'
+        className={`fixed inset-0 z-40 bg-[#ecebe6] px-6 pt-28 text-black transition-[opacity,transform] lg:hidden ${
+          open ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0 pointer-events-none'
         }`}
+        style={{ transitionDuration: '420ms' }}
       >
-        <div className="flex flex-col items-center justify-center h-full gap-8">
-          {navigationConfig.items.map((item, i) => (
+        <nav aria-label="모바일 메뉴" className="flex flex-col border-t border-black/15">
+          {navigationConfig.items.map((item, index) => (
             <a
-              key={item.label}
+              key={item.href}
               href={item.href}
-              onClick={(e) => handleNavClick(e, item.href)}
-              className="text-h3 text-white hover:text-highlight transition-colors duration-300"
-              style={{
-                transform: isMobileMenuOpen
-                  ? 'translateY(0)'
-                  : 'translateY(20px)',
-                opacity: isMobileMenuOpen ? 1 : 0,
-                transition: `all 0.5s cubic-bezier(0.16, 1, 0.3, 1) ${i * 0.1}s`,
-              }}
+              onClick={() => setOpen(false)}
+              className="flex items-center justify-between border-b border-black/15 py-5 text-3xl font-medium tracking-[-0.04em]"
             >
               {item.label}
+              <span className="font-mono text-xs text-black/40">0{index + 1}</span>
             </a>
           ))}
-        </div>
+        </nav>
       </div>
     </>
   );
