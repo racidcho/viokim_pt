@@ -1,76 +1,95 @@
-# Design QA — FRAME SCRUB HERO
+# Design QA — FRAME VIEWER + WORK DETAIL
 
 **Source visual truth**
 
-- `/Users/racidcho/.codex/generated_images/019f88ac-b441-7e81-9f4d-d180b99399e5/exec-1314b2ae-8119-4fce-89fa-2fb46eef4fd9.png`
-- Source pixels: `1487 × 1058`.
-- Selected state: option 1, desktop first screen with the matte identity panel, exposed film still, six-cut scrub rail, and teal active frame.
+- `audit-evidence/frame-crop-audit/audit.md` and its desktop/mobile source captures.
+- `audit-evidence/work-detail-audit/audit.md` and its desktop/mobile source captures.
+- The accepted design target is the audited transition from atmospheric crop to uncropped frame viewing, plus a compact detail-information band and reading-scale critic quote.
 
 **Rendered implementation evidence**
 
-- `qa-evidence/hero-frame-scrub/13-desktop-match-final.png` — final desktop state, `CUT 03`, scroll position `0`.
-- `qa-evidence/hero-frame-scrub/14-reference-comparison-final.png` — source and final implementation in one normalized side-by-side comparison input.
-- `qa-evidence/hero-frame-scrub/08-scroll-manifesto-final.png` — expanded-panel manifesto state.
-- `qa-evidence/hero-frame-scrub/09-mobile.png` — responsive touch/thumbnail state.
-- Desktop CSS viewport: `1440 × 1024`; implementation capture pixels: `1425 × 1013`; `devicePixelRatio: 1`. The in-app browser capture excludes its scrollbar edge from the saved bitmap.
-- Mobile CSS viewport: `390 × 844`; `devicePixelRatio: 1`.
-- Comparison normalization: source and implementation were proportionally scaled to `720px` high, kept uncropped, and stacked horizontally. Combined evidence pixels: `2024 × 720`.
+- `qa-evidence/e2e-frame-detail/01-desktop-intro.png` — desktop brand mode.
+- `qa-evidence/e2e-frame-detail/02-desktop-full-frame.png` — desktop `CUT 05` full-frame mode.
+- `qa-evidence/e2e-frame-detail/03-mobile-frame-gallery.png` — mobile `CUT 05` swipe gallery.
+- `qa-evidence/e2e-frame-detail/04-detail-hero-desktop.png` — desktop work detail hero.
+- `qa-evidence/e2e-frame-detail/05-detail-quote-desktop.png` — desktop critic quote.
+- `qa-evidence/e2e-frame-detail/06-detail-hero-mobile.png` — mobile work detail hero.
+- `qa-evidence/e2e-frame-detail/07-detail-quote-mobile.png` — mobile critic quote.
+- Combined comparison inputs: `08-home-desktop-before-after.png` through `13-quote-mobile-before-after.png`.
+
+**Viewport and normalization**
+
+- Desktop CSS viewport: `1440 × 1024`; implementation captures: `1425 × 1013`; `devicePixelRatio: 1`. The in-app browser capture excludes its scrollbar edge.
+- Mobile CSS viewport: `390 × 844`; implementation captures: `375 × 812`; `devicePixelRatio: 1`. The saved bitmap excludes browser scrollbar/chrome edges.
+- Desktop comparison pairs were proportionally normalized to `720px` high without cropping.
+- Mobile comparison pairs were proportionally normalized to `844px` high without cropping.
+- Source desktop pixels range from `1280 × 720` to `1440 × 1024`; source mobile pixels are `390 × 844` or `375 × 812`.
 
 ## Findings
 
 - No actionable P0/P1/P2 findings remain.
-- Fonts and typography: the VIO KIM wordmark has the source's dominant scale and compact tracking. The small mono labels, navigation, Korean line, and cut names preserve the intended editorial hierarchy without clipping or overlap.
-- Spacing and layout rhythm: the off-white panel occupies the selected option's left-weighted proportion, keeps the still exposed on the right, and separates identity from the scrub rail with a single fine rule. The scroll state expands the same panel instead of introducing an unrelated transition.
-- Colors and visual tokens: off-white, black, photographic blacks, and the existing VIO KIM teal `#35c9b8` reproduce the selected direction's restrained palette and active-state contrast.
-- Image quality and asset fidelity: all six frames and the full-bleed background use real stills already present in the project. No placeholder, fabricated film frame, inline SVG, or CSS-drawn image asset is used.
-- Copy and content: the portfolio identity, Korean statement, work title, frame index, scrub instruction, and selected-work action are concise and tied to the real project data.
-- Accessibility and interaction: the six cut controls are native buttons with `aria-pressed`, focus changes the selected frame, touch uses the thumbnail rail, and the selected-work CTA routes to the matching work detail.
+- Fonts and typography: critic quotes now use Geist/Pretendard at `43.2px / 62.2px` on desktop and `28px / 40.3px` on mobile, normal style, with restrained tracking (`-0.012em`). The short English work title retains the Playfair italic display treatment.
+- Spacing and layout rhythm: the detail hero information band is `243px` high on desktop and overlaps the image by exactly `48px`; mobile overlap is `0px`. Full-frame mode gives the image a dedicated black canvas, while the mobile frame rail is separated from the identity card.
+- Colors and visual tokens: black, off-white `#ecebe6`, and teal `#35c9b8` remain consistent. Active frames, instructions, focus states, and release-note labels use the existing teal rather than adding a new state color.
+- Image quality and asset fidelity: desktop full-frame rendering measures `2.388:1`, identical to the `1600 × 670` source. The detail hero renders at `2.39:1` with `object-fit: contain`. All photography is real project imagery; no generated or code-drawn substitutes are present.
+- Copy and content: device-specific instructions (`MOVE HORIZONTALLY TO SCRUB`, `SWIPE FRAMES`) describe the actual controls. Work title, format, role, director, genre, runtime, quote, and attribution remain sourced from the project data.
+- Icons and controls: existing Lucide navigation/close arrows remain optically consistent. Native buttons expose selected state with `aria-pressed`; hidden mode controls are also `visibility: hidden` so they do not remain keyboard-focusable.
 
 ## Focused comparison evidence
 
-- A separate crop was not needed. At the normalized `720px` height in `14-reference-comparison-final.png`, the full wordmark, navigation, panel bounds, teal block, scrub rail, film crop, and lower-corner metadata remain readable enough to judge their alignment and hierarchy.
-- The manifesto and mobile states were reviewed at their native captures because those interaction states are not represented in the static source option.
+- `08-home-desktop-before-after.png`: confirms the original atmospheric crop is replaced by a dedicated uncropped frame canvas after interaction.
+- `09-home-mobile-before-after.png`: confirms the nearly hidden background crop becomes a visible full-ratio swipe frame with centered active state.
+- `10-detail-desktop-before-after.png` and `12-detail-mobile-before-after.png`: confirm the hero still is no longer obscured by the information panel.
+- `11-quote-desktop-before-after.png` and `13-quote-mobile-before-after.png`: make size, tracking, line-height, measure, and synthetic-italic corrections readable at comparison scale.
 
 ## Comparison history
 
-1. Earlier implementation exposed a P1 black blank area during the sticky scroll transition.
-   - Cause: `overflow-hidden` on the hero and `overflow-x-hidden` on the home root created the wrong sticky containing block.
-   - Fix: removed hero overflow clipping and changed the home root to `overflow-x-clip`.
-   - Post-fix evidence: `qa-evidence/hero-frame-scrub/06-scroll-sticky-fixed.png`.
-2. The first manifesto capture had a P2 Korean text overlap.
-   - Fix: reduced the responsive display scale, increased line height, and made the highlighted phrase an inline block.
-   - Post-fix evidence: `qa-evidence/hero-frame-scrub/08-scroll-manifesto-final.png`.
-3. The custom SCRUB cursor produced a P2 obstruction over the logo and navigation.
-   - Fix: scoped the cursor target to the exposed image layer while keeping frame selection active across the hero.
-   - Post-fix evidence: `qa-evidence/hero-frame-scrub/12-desktop-match-cut-03.png`.
-4. The wordmark remained a P2 scale mismatch against the selected option.
-   - Fix: increased the large-screen wordmark to `clamp(8rem, 12vw, 11.5rem)`.
-   - Post-fix evidence: `qa-evidence/hero-frame-scrub/13-desktop-match-final.png` and the combined `14-reference-comparison-final.png`.
+1. Source P1: frame scrubbing changed a cropped background while the identity panel concealed most of the composition.
+   - Fix: introduced an explicit full-frame mode with `object-fit: contain`, a black canvas, counter, six-cut rail, close action, and pointer scrub.
+   - Evidence: `02-desktop-full-frame.png` and `08-home-desktop-before-after.png`; rendered/source ratios both measure `2.388`.
+2. Source P1: mobile frame changes were barely visible, relied on a desktop interaction metaphor, and could leave the active cut off-screen.
+   - Fix: replaced the mobile overlay with a full-width 2.39:1 scroll-snap gallery, `SWIPE FRAMES`, counter, and six 44px selection buttons that auto-align the selected frame.
+   - Evidence: `03-mobile-frame-gallery.png` and `09-home-mobile-before-after.png`; `CUT 05` is visible and selected.
+3. Source P2: the work-detail off-white panel covered the lower half of the hero image.
+   - Fix: made the image an uncropped aspect-ratio block followed by a compact information band; desktop overlap is 48px and mobile overlap is zero.
+   - Evidence: `04-detail-hero-desktop.png`, `06-detail-hero-mobile.png`, `10-detail-desktop-before-after.png`, and `12-detail-mobile-before-after.png`.
+4. Source P1: critic quote typography measured `72px`, `75.6px` line-height, `-3.24px` tracking on desktop and `38.4px`, `40.32px`, `-1.728px` on mobile.
+   - Fix: switched the long Korean quote to normal reading typography, a narrower measure, increased relative line-height, and restrained tracking.
+   - Evidence: `05-detail-quote-desktop.png`, `07-detail-quote-mobile.png`, `11-quote-desktop-before-after.png`, and `13-quote-mobile-before-after.png`.
+5. Implementation P2 found during interaction QA: tying full-frame visibility to hero scroll progress could hide the viewer after automated or user scroll-to-control behavior.
+   - Fix: made frame mode explicit and persistent until `CLOSE` or route navigation.
+   - Post-fix evidence: frame mode remains visible at the top, `CLOSE` restores the identity panel, and `VIEW WORK` routes to `/work/be-my-baby`.
+6. Implementation P2 found during accessibility QA: opacity-hidden mode controls could remain in the focus model.
+   - Fix: added `visibility: hidden` alongside opacity/pointer-state changes.
+   - Post-fix evidence: the accessibility snapshot in brand mode no longer exposes full-frame controls, while frame mode exposes `CLOSE`, six cut buttons, and `VIEW WORK`.
 
 ## Primary interactions tested
 
-- Horizontal pointer movement switches across all six hard-cut frames.
-- Thumbnail click and keyboard focus update the active frame and `aria-pressed` state.
-- Scroll expands the matte panel and crossfades identity into the manifesto without a blank interval.
-- `VIEW SELECTED WORK` routes to `/work/be-my-baby` through the existing slate transition.
-- Mobile keeps the identity and horizontally scrollable cut rail usable without relying on hover.
+- Desktop cut selection enters full-frame mode.
+- Horizontal pointer movement changes the selected cut and updates the live label.
+- `CLOSE` restores brand mode.
+- `VIEW WORK` routes through the slate transition to `/work/be-my-baby`.
+- Mobile cut buttons scroll the snap gallery to the selected full frame and update `aria-pressed`.
+- Detail hero and quote render at desktop and mobile breakpoints.
 - Browser console checked: no error-level messages.
 
 ## Open questions
 
-- None blocking. Motion uses still-frame scrubbing because project video assets are intentionally unavailable.
+- None blocking. Real video can be added later without changing this still-first interaction architecture.
 
 ## Follow-up polish
 
-- P3: when real reels arrive, the same frame rail can become a chapter selector without changing the first-screen composition.
+- P3: add a subtle touch-drag progress indicator only after real-device testing confirms users need more swipe feedback.
 
 ## Implementation checklist
 
-- [x] Match selected option 1 with real portfolio imagery.
-- [x] Make the first screen interactive without requiring video.
-- [x] Preserve keyboard, pointer, and touch paths.
-- [x] Verify desktop, scroll, mobile, routing, and console state.
-- [x] Compare source and implementation in one normalized input.
-- [x] Resolve all P0/P1/P2 findings.
+- [x] Preserve the current brand intro.
+- [x] Separate atmospheric crop from full-frame viewing.
+- [x] Implement mobile swipe and active-frame centering.
+- [x] Preserve native image aspect ratios.
+- [x] Reduce detail-panel image obstruction.
+- [x] Replace display-scale Korean quote typography with reading typography.
+- [x] Verify build, lint, desktop/mobile rendering, routing, interaction, and console state.
+- [x] Compare each source problem and implementation in the same visual input.
 
 final result: passed

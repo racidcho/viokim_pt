@@ -50,6 +50,8 @@ export default function WorkDetail() {
   );
   const currentIndex = works.findIndex((item) => item.slug === work.slug);
   const next = works[(currentIndex + 1) % works.length];
+  const ratioMatch = work.format.match(/([\d.]+)\s*:\s*([\d.]+)/);
+  const heroAspectRatio = ratioMatch ? `${ratioMatch[1]} / ${ratioMatch[2]}` : '16 / 9';
 
   const videoEmbed = (url: string) => {
     if (url.includes('vimeo.com')) {
@@ -79,28 +81,39 @@ export default function WorkDetail() {
         </span>
       </header>
 
-      <section className="relative flex min-h-[82svh] items-end overflow-hidden px-4 pb-6 pt-24 sm:px-8 sm:pb-8">
-        <div className="detail-still-push absolute inset-0">
-          <img src={work.stills[0]} alt={`${work.titleKo} 대표 스틸`} className="h-full w-full object-cover" />
+      <section className="relative overflow-hidden pt-16">
+        <div
+          className="relative mx-auto flex w-full max-w-[1600px] items-center justify-center overflow-hidden bg-[#070909]"
+          style={{ aspectRatio: heroAspectRatio }}
+        >
+          <img
+            src={work.stills[0]}
+            alt={`${work.titleKo} 대표 스틸`}
+            className="h-full w-full object-contain"
+          />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/20" aria-hidden="true" />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-black/35" aria-hidden="true" />
 
-        <div className="controlled-panel panel-enter relative z-10 w-full max-w-4xl bg-[#ecebe6] p-5 text-black shadow-[0_30px_90px_rgba(0,0,0,0.45)] sm:p-8 lg:p-10">
-          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-black/15 pb-4 font-mono text-[9px] tracking-[0.2em] text-black/45">
+        <div className="controlled-panel panel-enter relative z-10 mx-4 bg-[#ecebe6] text-black shadow-[0_24px_80px_rgba(0,0,0,0.38)] sm:mx-8 lg:mx-auto lg:-mt-12 lg:max-w-6xl">
+          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-black/15 px-5 py-4 font-mono text-[9px] tracking-[0.2em] text-black/45 sm:px-8">
             <span>{String(currentIndex + 1).padStart(2, '0')} · {work.categoryLabel.toUpperCase()}</span>
             <span>{work.year} · {work.format}</span>
           </div>
-          <h1 className="mt-9 text-[clamp(3.5rem,9vw,8rem)] font-semibold leading-[0.78] tracking-[-0.075em]">
-            {work.titleKo}
-          </h1>
-          <p className="mt-5 font-display-serif text-2xl italic tracking-[-0.03em] text-black/55 sm:text-4xl">
-            {work.titleEn}
-          </p>
-          <div className="mt-10 grid grid-cols-2 gap-x-6 gap-y-4 border-t border-black/15 pt-5 font-mono text-[9px] tracking-[0.15em] text-black/55 sm:grid-cols-4">
-            <span>ROLE<br /><strong className="mt-1 block font-medium text-black">{work.role}</strong></span>
-            <span>DIRECTOR<br /><strong className="mt-1 block font-medium text-black">{work.director}</strong></span>
-            <span>GENRE<br /><strong className="mt-1 block font-medium text-black">{work.genre}</strong></span>
-            <span>RUNTIME<br /><strong className="mt-1 block font-medium text-black">{work.runtime}</strong></span>
+          <div className="grid gap-8 px-5 py-7 sm:px-8 sm:py-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-end lg:gap-14 lg:px-10 lg:py-9">
+            <div>
+              <h1 className="text-[clamp(3.1rem,6vw,5.5rem)] font-semibold leading-[0.84] tracking-[-0.07em]">
+                {work.titleKo}
+              </h1>
+              <p className="mt-4 font-display-serif text-2xl italic tracking-[-0.025em] text-black/55 sm:text-3xl">
+                {work.titleEn}
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-x-6 gap-y-5 border-t border-black/15 pt-5 font-mono text-[9px] tracking-[0.13em] text-black/55 sm:grid-cols-4 lg:border-t-0 lg:pt-0">
+              <span>ROLE<br /><strong className="mt-1 block font-medium text-black">{work.role}</strong></span>
+              <span>DIRECTOR<br /><strong className="mt-1 block font-medium text-black">{work.director}</strong></span>
+              <span>GENRE<br /><strong className="mt-1 block font-medium text-black">{work.genre}</strong></span>
+              <span>RUNTIME<br /><strong className="mt-1 block font-medium text-black">{work.runtime}</strong></span>
+            </div>
           </div>
         </div>
       </section>
@@ -192,10 +205,10 @@ export default function WorkDetail() {
       </section>
 
       {work.quote && (
-        <section className="bg-[#ecebe6] px-5 py-20 text-black sm:px-8 lg:py-28">
-          <blockquote className="mx-auto max-w-5xl">
-            <p className="font-display-serif text-[clamp(2.4rem,5vw,5.5rem)] italic leading-[1.05] tracking-[-0.045em]">“{work.quote}”</p>
-            <cite className="mt-8 block font-mono text-[10px] tracking-[0.2em] text-black/45 not-italic">— {work.quoteSource}</cite>
+        <section className="bg-[#ecebe6] px-6 py-16 text-black sm:px-8 lg:py-20">
+          <blockquote className="mx-auto max-w-[800px]">
+            <p className="font-sans text-[clamp(1.75rem,3vw,2.75rem)] font-normal leading-[1.44] tracking-[-0.012em]">“{work.quote}”</p>
+            <cite className="mt-6 block font-mono text-[10px] tracking-[0.12em] text-black/45 not-italic">— {work.quoteSource}</cite>
           </blockquote>
         </section>
       )}
