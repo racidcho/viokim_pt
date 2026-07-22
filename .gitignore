@@ -1,0 +1,16 @@
+
+node_modules
+dist
+.vercel
+node_modules/
+dist/
+.vercel/
+
+.DS_Store
+*.local
+.env
+.env.*
+!.env.example
+
+*.log
+vio-kim-portfolio-dist.zip
