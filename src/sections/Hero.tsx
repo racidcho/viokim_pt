@@ -16,14 +16,9 @@ export function Hero() {
   const rafRef = useRef<number | null>(null);
   const [activeFrame, setActiveFrame] = useState(0);
   const [frameMode, setFrameMode] = useState(false);
-  const [mobileIntroVisible, setMobileIntroVisible] = useState(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
-    try {
-      return window.sessionStorage.getItem('vio-mobile-intro-seen') !== '1';
-    } catch {
-      return true;
-    }
-  });
+  const [mobileIntroVisible, setMobileIntroVisible] = useState(
+    () => !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
   const [scrollProgress, setScrollProgress] = useState(0);
   const [viewport, setViewport] = useState(() => ({
     width: window.innerWidth,
@@ -112,11 +107,6 @@ export function Hero() {
 
     const timer = window.setTimeout(() => {
       setMobileIntroVisible(false);
-      try {
-        window.sessionStorage.setItem('vio-mobile-intro-seen', '1');
-      } catch {
-        // Keep the intro ephemeral when storage is unavailable.
-      }
     }, 1650);
 
     return () => window.clearTimeout(timer);
@@ -124,11 +114,6 @@ export function Hero() {
 
   const dismissMobileIntro = () => {
     setMobileIntroVisible(false);
-    try {
-      window.sessionStorage.setItem('vio-mobile-intro-seen', '1');
-    } catch {
-      // Keep the main experience accessible when storage is unavailable.
-    }
   };
 
   const updateMobileFrameFromScroll = () => {
