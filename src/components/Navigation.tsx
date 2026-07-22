@@ -30,7 +30,7 @@ export function Navigation() {
         }`}
         style={{ transitionDuration: '420ms' }}
       >
-        <div className="mx-auto flex max-w-7xl items-center justify-between border border-black/15 bg-[#ecebe6]/95 px-5 py-4 text-black backdrop-blur-md sm:px-7">
+        <div className="mx-auto flex max-w-7xl items-center justify-between border border-black/15 bg-[#ecebe6] px-5 py-4 text-black sm:px-7">
           <a
             href="#hero"
             className="text-xl font-semibold tracking-[-0.04em] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-highlight"
