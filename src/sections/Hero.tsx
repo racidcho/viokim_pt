@@ -1,16 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowUpRight, X } from 'lucide-react';
 import { navigationConfig } from '../config';
+import { CinematicAperture } from '../components/CinematicAperture';
 import { useSlateNavigate } from '../components/Slate';
 import { works } from '../works-data';
 
 const heroWork = works[0];
 const frameCount = heroWork.stills.length;
-const mobilePrologueFrames = [
-  { src: heroWork.stills[0], label: 'LIGHT', timecode: '00:00 — 01:50' },
-  { src: heroWork.stills[1], label: 'MOVEMENT', timecode: '01:50 — 03:35' },
-  { src: heroWork.stills[4], label: 'MEMORY', timecode: '03:35 — 05:40' },
-] as const;
 
 const clamp = (value: number) => Math.min(1, Math.max(0, value));
 
@@ -21,10 +17,6 @@ export function Hero() {
   const rafRef = useRef<number | null>(null);
   const [activeFrame, setActiveFrame] = useState(0);
   const [frameMode, setFrameMode] = useState(false);
-  const [mobileIntroVisible, setMobileIntroVisible] = useState(
-    () => !window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  );
-  const [mobileIntroBeat, setMobileIntroBeat] = useState(0);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [viewport, setViewport] = useState(() => ({
     width: window.innerWidth,
@@ -108,30 +100,6 @@ export function Hero() {
     });
   };
 
-  useEffect(() => {
-    if (desktop || !mobileIntroVisible) return;
-
-    const movementTimer = window.setTimeout(() => {
-      setMobileIntroBeat(1);
-    }, 1900);
-    const memoryTimer = window.setTimeout(() => {
-      setMobileIntroBeat(2);
-    }, 3600);
-    const exitTimer = window.setTimeout(() => {
-      setMobileIntroVisible(false);
-    }, 5600);
-
-    return () => {
-      window.clearTimeout(movementTimer);
-      window.clearTimeout(memoryTimer);
-      window.clearTimeout(exitTimer);
-    };
-  }, [desktop, mobileIntroVisible]);
-
-  const dismissMobileIntro = () => {
-    setMobileIntroVisible(false);
-  };
-
   const updateMobileFrameFromScroll = () => {
     const filmStrip = mobileFilmStripRef.current;
     if (!filmStrip || filmStrip.clientHeight === 0) return;
@@ -144,6 +112,7 @@ export function Hero() {
 
   return (
     <section ref={sectionRef} id="hero" className="relative min-h-[100svh] bg-black lg:h-[175svh]">
+      <CinematicAperture onOpenWork={openWork} />
       <div className="relative min-h-[100svh] overflow-hidden bg-black lg:sticky lg:top-0 lg:h-[100svh]">
         <div className="hidden lg:block">
           <div
@@ -421,56 +390,6 @@ export function Hero() {
           </div>
 
           <span className="sr-only" aria-live="polite">컷 {activeFrame + 1} 선택됨</span>
-
-          {mobileIntroVisible && (
-            <button
-              type="button"
-              onClick={dismissMobileIntro}
-              className="mobile-cold-open absolute inset-0 z-50 flex flex-col overflow-hidden bg-black px-5 pb-4 pt-7 text-left text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-highlight"
-              aria-label="사이트 오프닝 건너뛰기"
-            >
-              <span className="mobile-prologue-heading block shrink-0">
-                <span className="block text-[clamp(2.8rem,14vw,4.2rem)] font-semibold leading-[0.82] tracking-[-0.075em]">VIO KIM</span>
-                <span className="mt-3 block font-mono text-[7px] tracking-[0.26em] text-white/55">
-                  DIRECTOR OF PHOTOGRAPHY · <span className="text-highlight">SEOUL</span>
-                </span>
-                <span className="mt-5 block text-[0.79rem] font-medium leading-relaxed tracking-[0.12em] text-white/86">
-                  빛을 설계하고, 움직임을 기다리고, 순간을 기억합니다.
-                </span>
-              </span>
-
-              <span className="mobile-prologue-progress mt-5 flex shrink-0 items-center gap-4 border-t border-white/25 pt-3 font-mono text-[7px] tracking-[0.22em] text-white/58">
-                <span className="text-highlight">0{mobileIntroBeat + 1}</span>
-                <span>/ 03</span>
-                <span className="ml-auto">TAP TO SKIP</span>
-              </span>
-
-              <span className="mobile-prologue-reel mt-3 grid min-h-0 flex-1 grid-rows-3 gap-2.5">
-                {mobilePrologueFrames.map((frame, index) => {
-                  const active = mobileIntroBeat === index;
-                  const revealed = mobileIntroBeat >= index;
-                  return (
-                    <span
-                      key={frame.label}
-                      className={`mobile-prologue-frame relative flex min-h-0 items-center justify-center overflow-hidden border transition-[border-color,opacity,transform] duration-700 ${active ? 'scale-100 border-highlight/85 opacity-100' : revealed ? 'scale-[0.975] border-white/20 opacity-55' : 'scale-[0.95] border-white/10 opacity-15'}`}
-                      aria-hidden="true"
-                    >
-                      <img src={frame.src} alt="" className="h-full max-h-full w-full object-contain" />
-                      <span className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-black/75 px-2.5 py-2 font-mono text-[6px] tracking-[0.2em] text-white/70">
-                        <span className={active ? 'text-highlight' : undefined}>0{index + 1} · {frame.label}</span>
-                        <span>{frame.timecode}</span>
-                      </span>
-                    </span>
-                  );
-                })}
-              </span>
-
-              <span className="mobile-prologue-meta mt-3 flex shrink-0 items-center justify-between border-t border-white/25 pt-3 font-mono text-[6px] tracking-[0.18em] text-white/72">
-                <span>{heroWork.titleKo} · <span className="font-display-serif text-[0.72rem] italic tracking-normal text-white">{heroWork.titleEn}</span> · <span className="text-highlight">SELECTED WORK 01</span></span>
-                <span className="text-highlight">{heroWork.year}</span>
-              </span>
-            </button>
-          )}
         </div>
       </div>
     </section>
