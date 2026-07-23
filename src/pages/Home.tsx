@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Navigation } from '../components/Navigation';
 import { CustomCursor } from '../components/CustomCursor';
+import { CinematicAperture } from '../components/CinematicAperture';
 import { Hero } from '../sections/Hero';
 import { About } from '../sections/About';
 import { Works } from '../sections/Works';
@@ -21,6 +22,7 @@ export default function Home() {
       <CustomCursor />
       <Navigation />
       <main>
+        <CinematicAperture />
         <Hero />
         <About />
         <Works />

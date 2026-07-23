@@ -7,7 +7,15 @@ export function Navigation() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setVisible(window.scrollY > window.innerHeight * 0.68);
+    const onScroll = () => {
+      const opening = document.querySelector<HTMLElement>(
+        '[data-testid="aperture-opening"]'
+      );
+      const threshold = opening
+        ? opening.offsetHeight - window.innerHeight * 1.05
+        : window.innerHeight * 0.68;
+      setVisible(window.scrollY > threshold);
+    };
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);

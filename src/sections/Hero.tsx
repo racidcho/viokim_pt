@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowUpRight, X } from 'lucide-react';
 import { navigationConfig } from '../config';
-import { CinematicAperture } from '../components/CinematicAperture';
 import { useSlateNavigate } from '../components/Slate';
 import { works } from '../works-data';
 
@@ -112,7 +111,6 @@ export function Hero() {
 
   return (
     <section ref={sectionRef} id="hero" className="relative min-h-[100svh] bg-black lg:h-[175svh]">
-      <CinematicAperture onOpenWork={openWork} />
       <div className="relative min-h-[100svh] overflow-hidden bg-black lg:sticky lg:top-0 lg:h-[100svh]">
         <div className="hidden lg:block">
           <div
