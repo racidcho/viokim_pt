@@ -877,7 +877,7 @@
 
   @media (max-width: 1023px) {
     .scroll-aperture {
-      height: 175svh;
+      height: 150svh;
     }
 
     .scroll-aperture__motion {

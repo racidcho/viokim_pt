@@ -36,12 +36,18 @@ export function CinematicAperture() {
       const viewportHeight = window.innerHeight;
       const mobile = viewportWidth < 1024;
       const maxScroll = Math.max(1, section.offsetHeight - viewportHeight);
+      const sectionScroll = -section.getBoundingClientRect().top;
       const progress = reduceMotion
         ? 0
-        : clamp(-section.getBoundingClientRect().top / maxScroll);
+        : clamp(sectionScroll / maxScroll);
+      const handoffProgress = reduceMotion
+        ? 0
+        : clamp((sectionScroll - maxScroll) / viewportHeight);
       const openProgress = reduceMotion ? 1 : smoothstep(0.1, 0.58, progress);
       const titleProgress = reduceMotion ? 1 : smoothstep(0.48, 0.72, progress);
-      const exitProgress = reduceMotion ? 0 : smoothstep(0.8, 1, progress);
+      const exitProgress = reduceMotion
+        ? 0
+        : smoothstep(0.12, 0.58, handoffProgress);
       const cueProgress = reduceMotion ? 0 : 1 - smoothstep(0.06, 0.34, progress);
 
       const initialFrameHeight = mobile
@@ -110,8 +116,14 @@ export function CinematicAperture() {
         `${interpolate(initialFrameHeight, targetFrameHeight, openProgress)}px`
       );
 
-      const nextStage: OpeningStage =
-        progress >= 0.8 ? 3 : progress >= 0.5 ? 2 : progress >= 0.12 ? 1 : 0;
+      let nextStage: OpeningStage = 0;
+      if (handoffProgress > 0) {
+        nextStage = 3;
+      } else if (progress >= 0.5) {
+        nextStage = 2;
+      } else if (progress >= 0.12) {
+        nextStage = 1;
+      }
       setOpeningStage((current) => (current === nextStage ? current : nextStage));
     };
 
