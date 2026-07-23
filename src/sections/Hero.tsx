@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowUpRight, X } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 import { navigationConfig } from '../config';
 import { useSlateNavigate } from '../components/Slate';
 import { works } from '../works-data';
@@ -59,7 +59,7 @@ export function Hero() {
   }, []);
 
   const desktop = viewport.width >= 1024;
-  const frameVisible = frameMode;
+  const frameVisible = desktop || frameMode;
   const expansion = desktop ? clamp((scrollProgress - 0.22) / 0.7) : 0;
   const identityFade = desktop ? 1 - clamp((scrollProgress - 0.62) / 0.18) : 1;
   const manifestoReveal = desktop ? clamp((scrollProgress - 0.69) / 0.2) : 0;
@@ -241,10 +241,10 @@ export function Hero() {
                 <span className="font-mono text-[9px] tracking-[0.22em] text-white/40">MOVE HORIZONTALLY TO SCRUB</span>
                 <button
                   type="button"
-                  onClick={() => setFrameMode(false)}
+                  onClick={openWork}
                   className="flex h-11 items-center gap-2 border border-white/25 px-4 font-mono text-[9px] tracking-[0.18em] text-white/65 transition-colors hover:border-highlight hover:text-highlight focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-highlight"
                 >
-                  CLOSE <X className="h-4 w-4" />
+                  VIEW WORK <ArrowUpRight className="h-4 w-4" />
                 </button>
               </div>
             </header>

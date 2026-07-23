@@ -63,15 +63,23 @@ export function CinematicAperture() {
       );
       stage.style.setProperty(
         '--aperture-title-opacity',
-        (titleProgress * (1 - exitProgress * 0.82)).toFixed(4)
+        (titleProgress * (1 - exitProgress)).toFixed(4)
       );
       stage.style.setProperty(
         '--aperture-stage-opacity',
-        (1 - exitProgress * 0.62).toFixed(4)
+        '1'
       );
       stage.style.setProperty(
         '--aperture-stage-scale',
-        (1 - exitProgress * 0.018).toFixed(4)
+        '1'
+      );
+      stage.style.setProperty(
+        '--aperture-frame-opacity',
+        (1 - exitProgress).toFixed(4)
+      );
+      stage.style.setProperty(
+        '--aperture-skip-opacity',
+        (1 - exitProgress).toFixed(4)
       );
       stage.style.setProperty(
         '--aperture-eyebrow-opacity',

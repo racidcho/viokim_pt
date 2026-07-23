@@ -604,8 +604,8 @@
   }
 
   .scroll-aperture {
-    height: 240svh;
-    margin-bottom: -90svh;
+    height: 200svh;
+    margin-bottom: 0;
     z-index: 2;
   }
 
@@ -619,6 +619,8 @@
     --aperture-title-opacity: 0;
     --aperture-stage-opacity: 1;
     --aperture-stage-scale: 1;
+    --aperture-frame-opacity: 1;
+    --aperture-skip-opacity: 1;
     --aperture-eyebrow-opacity: 1;
     --aperture-video-x: 50%;
     --aperture-video-y: 50%;
@@ -715,8 +717,9 @@
     border-bottom: 1px solid color-mix(in srgb, var(--highlight) 72%, transparent);
     background: #000;
     box-shadow: 0 28px 100px rgba(0, 0, 0, 0.66);
+    opacity: var(--aperture-frame-opacity);
     transform: translate(-50%, -50%);
-    will-change: width, height;
+    will-change: width, height, opacity;
   }
 
   .scroll-aperture__frame-video {
@@ -858,7 +861,12 @@
     line-height: 1;
     letter-spacing: 0.2em;
     color: rgba(255, 255, 255, 0.4);
-    transition: color 220ms ease;
+    opacity: var(--aperture-skip-opacity);
+    transition: color 220ms ease, opacity 220ms ease;
+  }
+
+  .scroll-aperture__stage[data-opening-stage="3"] .scroll-aperture__skip {
+    pointer-events: none;
   }
 
   .scroll-aperture__skip:hover,
@@ -869,7 +877,7 @@
 
   @media (max-width: 1023px) {
     .scroll-aperture {
-      height: 190svh;
+      height: 175svh;
     }
 
     .scroll-aperture__motion {
@@ -963,7 +971,7 @@
   @media (prefers-reduced-motion: reduce) {
     .scroll-aperture {
       height: 110svh;
-      margin-bottom: -10svh;
+      margin-bottom: 0;
     }
 
     .scroll-aperture__motion-video,

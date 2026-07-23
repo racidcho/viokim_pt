@@ -8,13 +8,13 @@ export function Navigation() {
 
   useEffect(() => {
     const onScroll = () => {
-      const opening = document.querySelector<HTMLElement>(
-        '[data-testid="aperture-opening"]'
+      const hero = document.querySelector<HTMLElement>('#hero');
+      const revealLine = Math.min(96, window.innerHeight * 0.12);
+      setVisible(
+        hero
+          ? hero.getBoundingClientRect().top <= revealLine
+          : window.scrollY > window.innerHeight
       );
-      const threshold = opening
-        ? opening.offsetHeight - window.innerHeight * 1.05
-        : window.innerHeight * 0.68;
-      setVisible(window.scrollY > threshold);
     };
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
