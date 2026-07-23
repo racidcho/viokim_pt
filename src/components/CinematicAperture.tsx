@@ -221,12 +221,12 @@ export function CinematicAperture() {
         </div>
 
         <div className="scroll-aperture__title">
-          <p className="font-display-serif italic">BE MY BABY</p>
+          <p className="english-display">BE MY BABY</p>
           <p>2026 · FEATURE FILM · CINEMATOGRAPHY</p>
         </div>
 
         <div className="scroll-aperture__intro-meta" aria-hidden="true">
-          <span className="font-display-serif italic">BE MY BABY</span>
+          <span className="english-display">BE MY BABY</span>
           <span>· OPENING STUDY</span>
         </div>
 

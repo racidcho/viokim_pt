@@ -69,7 +69,7 @@ module.exports = {
       },
       fontFamily: {
         sans: ['Geist', 'sans-serif'],
-        'display-serif': ['"Playfair Display"', 'Pretendard Variable', 'Georgia', 'serif'],
+        'korean-display': ['"Pretendard Variable"', '"Pretendard"', '-apple-system', 'sans-serif'],
       },
       fontSize: {
         'display-xxl': ['168px', { lineHeight: '1.15', fontWeight: '500' }],

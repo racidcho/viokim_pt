@@ -39,10 +39,10 @@ export function Contact() {
           <p className="mb-8 font-mono text-[10px] tracking-[0.28em] text-black/45">
             05 · START A CONVERSATION
           </p>
-          <h2 className="max-w-[760px] font-display-serif text-[clamp(4rem,8vw,8rem)] leading-[0.82] tracking-[-0.065em]">
+          <h2 className="english-display max-w-[760px] text-[clamp(4rem,8vw,8rem)] leading-[0.82] tracking-[-0.075em]">
             LET'S MAKE
             <br />
-            <span className="italic text-highlight">A FRAME.</span>
+            <span className="text-highlight">A FRAME.</span>
           </h2>
           <p className="mt-8 max-w-lg text-base leading-relaxed text-black/60 sm:text-lg">
             {contactConfig.subtitle}

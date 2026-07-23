@@ -49,7 +49,7 @@ export function About() {
             <div className="absolute inset-x-5 bottom-7 z-20">
               <p className="font-mono text-[8px] tracking-[0.24em] text-highlight">DIRECTOR OF PHOTOGRAPHY</p>
               <p className="mt-3 whitespace-nowrap text-[20vw] font-bold leading-[0.78] tracking-[-0.09em]">
-                VIO <span className="font-display-serif italic font-normal text-white/70">KIM</span>
+                VIO <span className="english-display font-bold text-white/70">KIM</span>
               </p>
               <div className="mt-5 flex items-end justify-between gap-5 border-t border-white/25 pt-4">
                 <p className="max-w-[15rem] text-[13px] leading-relaxed text-white/[0.68]">
@@ -79,7 +79,7 @@ export function About() {
             <p className="mb-12 font-mono text-[10px] tracking-[0.28em] text-black/45">
               01 · MANIFESTO
             </p>
-            <h2 className="text-balance font-display-serif text-[clamp(3.4rem,7vw,7.2rem)] leading-[0.96] tracking-[-0.055em]">
+            <h2 className="text-balance font-korean-display text-[clamp(3.4rem,7vw,7.2rem)] leading-[0.96] tracking-[-0.055em]">
               {aboutConfig.titleLine1}
               <br />
               <span className="italic">{aboutConfig.titleLine2}</span>

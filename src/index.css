@@ -1,5 +1,4 @@
 @import url('https://fonts.googleapis.com/css2?family=Geist:wght@100;200;300;400;500;600;700;800;900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css');
 
 @tailwind base;
@@ -79,6 +78,12 @@
 }
 
 @layer components {
+  .english-display {
+    font-family: 'Geist', sans-serif;
+    font-style: normal;
+    font-weight: 600;
+  }
+
   .controlled-panel {
     isolation: isolate;
   }
@@ -409,7 +414,7 @@
     transition: bottom 800ms var(--ease-dramatic), opacity 500ms var(--ease-smooth);
   }
 
-  .cinematic-aperture__meta .font-display-serif {
+  .cinematic-aperture__meta .english-display {
     font-size: clamp(0.9rem, 1.2vw, 1.25rem);
     letter-spacing: 0.02em;
     color: var(--highlight);
@@ -580,7 +585,7 @@
       letter-spacing: 0.16em;
     }
 
-    .cinematic-aperture__meta .font-display-serif {
+    .cinematic-aperture__meta .english-display {
       font-size: 0.88rem;
     }
 
@@ -771,7 +776,7 @@
     color: rgba(255, 255, 255, 0.48);
   }
 
-  .scroll-aperture__title .font-display-serif {
+  .scroll-aperture__title .english-display {
     font-size: clamp(1rem, 1.4vw, 1.35rem);
     letter-spacing: 0.02em;
     color: var(--highlight);
@@ -794,7 +799,7 @@
     white-space: nowrap;
   }
 
-  .scroll-aperture__intro-meta .font-display-serif {
+  .scroll-aperture__intro-meta .english-display {
     font-size: clamp(0.95rem, 1.2vw, 1.2rem);
     letter-spacing: 0.02em;
     color: var(--highlight);
@@ -929,7 +934,7 @@
       letter-spacing: 0.15em;
     }
 
-    .scroll-aperture__title .font-display-serif {
+    .scroll-aperture__title .english-display {
       font-size: 0.96rem;
     }
 
@@ -940,7 +945,7 @@
       letter-spacing: 0.14em;
     }
 
-    .scroll-aperture__intro-meta .font-display-serif {
+    .scroll-aperture__intro-meta .english-display {
       font-size: 0.86rem;
     }
 

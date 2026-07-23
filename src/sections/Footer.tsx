@@ -12,10 +12,10 @@ export function Footer() {
   return (
     <footer className="border-t border-white/15 bg-black px-5 pb-10 pt-16 text-white sm:px-8 lg:pt-24">
       <div className="mx-auto max-w-7xl">
-        <p className="font-display-serif text-[clamp(3.4rem,9vw,9rem)] leading-[0.82] tracking-[-0.065em]">
+        <p className="english-display text-[clamp(3.4rem,9vw,9rem)] leading-[0.82] tracking-[-0.075em]">
           EVERY FRAME
           <br />
-          <span className="italic text-highlight">TELLS A STORY.</span>
+          <span className="text-highlight">TELLS A STORY.</span>
         </p>
 
         <div className="mt-16 grid gap-10 border-t border-white/15 pt-8 sm:grid-cols-2 lg:grid-cols-4">

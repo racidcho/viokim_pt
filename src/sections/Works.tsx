@@ -46,8 +46,8 @@ export function Works() {
             <p className="mb-6 font-mono text-[10px] tracking-[0.28em] text-white/40">
               02 · SELECTED WORKS
             </p>
-            <h2 className="font-display-serif text-[clamp(4.8rem,11vw,10rem)] leading-[0.78] tracking-[-0.065em]">
-              <span className="italic">W</span>ORKS
+            <h2 className="english-display text-[clamp(4.8rem,11vw,10rem)] leading-[0.78] tracking-[-0.075em]">
+              WORKS
             </h2>
           </div>
           <div className="flex flex-wrap gap-x-5 gap-y-3" aria-label="작품 필터">

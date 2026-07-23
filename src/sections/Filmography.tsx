@@ -17,8 +17,8 @@ export function Filmography() {
         <div className="mb-14 flex flex-col gap-6 border-t border-white/20 pt-6 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="mb-6 font-mono text-[10px] tracking-[0.28em] text-white/40">03 · COMPLETE INDEX</p>
-            <h2 className="whitespace-nowrap font-display-serif text-[12vw] leading-[0.8] tracking-[-0.06em] text-white sm:text-[clamp(3.8rem,8vw,8rem)]">
-              FILM<span className="italic text-highlight">OGRAPHY</span>
+            <h2 className="english-display whitespace-nowrap text-[12vw] leading-[0.8] tracking-[-0.075em] text-white sm:text-[clamp(3.8rem,8vw,8rem)]">
+              FILM<span className="text-highlight">OGRAPHY</span>
             </h2>
             <p className="mt-6 max-w-xl text-base text-white/50">
               2019 — 2026 · 장편 {filmography.filter((f) => f.type.includes('Feature')).length}

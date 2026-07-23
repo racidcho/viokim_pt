@@ -11,8 +11,8 @@ export function Credentials() {
         <div className="grid gap-20 lg:grid-cols-2">
         {/* Awards */}
         <div>
-          <h2 className="mb-12 font-display-serif text-[clamp(3.8rem,7vw,7rem)] leading-[0.8] tracking-[-0.06em]">
-            AW<span className="italic text-highlight">ARDS</span>
+          <h2 className="english-display mb-12 text-[clamp(3.8rem,7vw,7rem)] leading-[0.8] tracking-[-0.075em]">
+            AW<span className="text-highlight">ARDS</span>
           </h2>
           <ul className="space-y-8">
             {personalAwards.map((a) => (
@@ -34,8 +34,8 @@ export function Credentials() {
 
         {/* VK FILM & Clients */}
         <div>
-          <h2 className="mb-12 font-display-serif text-[clamp(3.8rem,7vw,7rem)] leading-[0.8] tracking-[-0.06em]">
-            VK <span className="italic text-highlight">FILM</span>
+          <h2 className="english-display mb-12 text-[clamp(3.8rem,7vw,7rem)] leading-[0.8] tracking-[-0.075em]">
+            VK <span className="text-highlight">FILM</span>
           </h2>
           <p className="mb-8 font-light text-black/55">
             2017 — 2025 · Director / Videographer / Photographer

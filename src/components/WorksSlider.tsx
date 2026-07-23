@@ -50,12 +50,11 @@ function SlideFrame({ index, onView }: SlideFrameProps) {
           className="slide-title group cursor-pointer"
           aria-label={`${w.titleKo} 상세 보기`}
         >
-          <span className="font-display-serif block text-white text-[15vw] md:text-[7.5vw] leading-none font-medium group-hover:text-highlight transition-colors duration-500">
+          <span className="font-korean-display block text-white text-[15vw] md:text-[7.5vw] leading-none font-medium group-hover:text-highlight transition-colors duration-500">
             {w.titleKo}
           </span>
-          <span className="font-display-serif italic block text-white/55 text-[6vw] md:text-[2.2vw] leading-tight mt-3 md:mt-4">
-            {w.titleEn.charAt(0)}
-            <span className="not-italic">{w.titleEn.slice(1)}</span>
+          <span className="english-display block text-white/55 text-[5vw] font-medium leading-tight tracking-[-0.035em] md:mt-4 md:text-[1.8vw] mt-3">
+            {w.titleEn}
           </span>
         </button>
 
@@ -115,7 +114,7 @@ export function WorksSlider() {
   }, []);
 
   const goTo = useCallback(
-    (next: number, dir: number) => {
+    function advanceSlide(next: number, dir: number) {
       if (next < 0 || next >= TOTAL || next === indexRef.current) return;
       if (lockRef.current) {
         pendingRef.current = dir; // 전환 중 입력은 1스텝만 대기
@@ -144,7 +143,7 @@ export function WorksSlider() {
           const pending = pendingRef.current;
           pendingRef.current = 0;
           if (pending !== 0) {
-            goTo(indexRef.current + pending, pending);
+            advanceSlide(indexRef.current + pending, pending);
           }
         },
       });

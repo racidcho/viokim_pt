@@ -104,7 +104,7 @@ export default function WorkDetail() {
               <h1 className="text-[clamp(3.1rem,6vw,5.5rem)] font-semibold leading-[0.84] tracking-[-0.07em]">
                 {work.titleKo}
               </h1>
-              <p className="mt-4 font-display-serif text-2xl italic tracking-[-0.025em] text-black/55 sm:text-3xl">
+              <p className="english-display mt-4 text-xl font-medium tracking-[-0.035em] text-black/50 sm:text-2xl">
                 {work.titleEn}
               </p>
             </div>
@@ -171,8 +171,8 @@ export default function WorkDetail() {
           <div className="mb-14 flex flex-col gap-5 border-t border-white/15 pt-6 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="mb-5 font-mono text-[10px] tracking-[0.25em] text-white/35">FRAME STUDY</p>
-              <h2 className="font-display-serif text-[clamp(4.2rem,9vw,8rem)] leading-[0.8] tracking-[-0.06em]">
-                SELECTED <span className="italic text-highlight">CUTS</span>
+              <h2 className="english-display text-[clamp(4.2rem,9vw,8rem)] leading-[0.8] tracking-[-0.075em]">
+                SELECTED <span className="text-highlight">CUTS</span>
               </h2>
             </div>
             <p className="max-w-sm text-sm leading-relaxed text-white/45">영상 대신 장면의 빛, 구도, 색을 스틸의 원래 비율로 살펴봅니다.</p>

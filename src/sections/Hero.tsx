@@ -220,7 +220,7 @@ export function Hero() {
               <p className="self-center text-[clamp(3.5rem,5.6vw,6.4rem)] font-semibold leading-[1.05] tracking-[-0.065em]">
                 보이지 않는 것을
                 <br />
-                <span className="inline-block bg-highlight px-3 pb-1 font-display-serif italic font-normal">보이게</span> 하고,
+                <span className="inline-block bg-highlight px-3 pb-1 font-korean-display italic font-normal">보이게</span> 하고,
                 <br />
                 순간을 영원으로.
               </p>
@@ -327,7 +327,7 @@ export function Hero() {
               <p className="font-mono text-[7px] tracking-[0.2em] text-highlight">OPENING SEQUENCE · 01</p>
               <p className="mt-1 text-[1.35rem] font-medium leading-tight tracking-[-0.045em]">
                 {heroWork.titleKo}
-                <span className="ml-2 font-display-serif text-[1.05rem] italic font-normal text-white/[0.62]">{heroWork.titleEn}</span>
+                <span className="english-display ml-2 text-[0.95rem] font-medium tracking-[-0.025em] text-white/[0.62]">{heroWork.titleEn}</span>
               </p>
             </div>
             <p className="shrink-0 font-mono text-[8px] tracking-[0.18em] text-white/68">
