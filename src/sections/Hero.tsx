@@ -232,7 +232,7 @@ export function Hero() {
             onPointerMove={selectFrameFromPointer}
             aria-hidden={!frameVisible}
           >
-            <header className="flex h-20 shrink-0 items-center justify-between border-b border-white/15 px-8 text-white">
+            <header className="mt-16 flex h-20 shrink-0 items-center justify-between border-b border-white/15 px-8 text-white">
               <div>
                 <p className="font-mono text-[9px] tracking-[0.22em] text-highlight">FULL FRAME · {String(activeFrame + 1).padStart(2, '0')} / {String(frameCount).padStart(2, '0')}</p>
                 <p className="mt-2 text-sm">{heroWork.titleKo} · {heroWork.titleEn}</p>

@@ -695,7 +695,7 @@
 
   .scroll-aperture__eyebrow {
     position: absolute;
-    top: clamp(1.5rem, 4vh, 3rem);
+    top: clamp(4.5rem, 10vh, 5.5rem);
     left: clamp(1.25rem, 3vw, 3.5rem);
     right: clamp(1.25rem, 3vw, 3.5rem);
     z-index: 6;
@@ -909,7 +909,7 @@
     }
 
     .scroll-aperture__eyebrow {
-      top: 2.75rem;
+      top: 4.75rem;
       left: 1rem;
       right: 1rem;
       font-size: 0.58rem;
@@ -964,7 +964,7 @@
     }
 
     .scroll-aperture__skip {
-      top: 4.5rem;
+      top: 7rem;
       right: 1rem;
       bottom: auto;
       min-height: 2.5rem;

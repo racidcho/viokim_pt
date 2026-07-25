@@ -2,23 +2,35 @@ import { useEffect, useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { navigationConfig } from '../config';
 
+const NAV_TRIGGER_LINE = 72;
+
 export function Navigation() {
-  const [visible, setVisible] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => {
+    let frame = 0;
+    const update = () => {
+      frame = 0;
       const hero = document.querySelector<HTMLElement>('#hero');
-      const revealLine = Math.min(96, window.innerHeight * 0.12);
-      setVisible(
+      setScrolled(
         hero
-          ? hero.getBoundingClientRect().top <= revealLine
+          ? hero.getBoundingClientRect().bottom <= NAV_TRIGGER_LINE
           : window.scrollY > window.innerHeight
       );
     };
-    onScroll();
+    const onScroll = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(update);
+    };
+    update();
     window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    window.addEventListener('resize', onScroll);
+    return () => {
+      if (frame) window.cancelAnimationFrame(frame);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
   }, []);
 
   useEffect(() => {
@@ -30,20 +42,23 @@ export function Navigation() {
     return () => window.removeEventListener('keydown', onKey);
   }, [open]);
 
+  const solid = scrolled || open;
+
   return (
     <>
       <header
-        className={`fixed inset-x-0 top-0 z-50 px-3 pt-3 transition-[transform,opacity] sm:px-6 sm:pt-4 ${
-          visible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'
+        className={`fixed inset-x-0 top-0 z-50 border-b transition-[background-color,border-color,color] duration-500 ease-out motion-reduce:transition-none ${
+          solid
+            ? 'border-black/15 bg-[#ecebe6] text-black'
+            : 'border-transparent bg-transparent text-white'
         }`}
-        style={{ transitionDuration: '420ms' }}
       >
-        <div className="mx-auto flex max-w-7xl items-center justify-between border border-black/15 bg-[#ecebe6] px-5 py-4 text-black sm:px-7">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-7">
           <a
             href="#hero"
             className="text-xl font-semibold tracking-[-0.04em] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-highlight"
           >
-            VIO <span className="bg-highlight px-1">KIM</span>
+            VIO <span className="bg-highlight px-1 text-black">KIM</span>
           </a>
 
           <nav aria-label="고정 메뉴" className="hidden items-center gap-8 lg:flex">
@@ -51,7 +66,9 @@ export function Navigation() {
               <a
                 key={item.href}
                 href={item.href}
-                className="text-[11px] font-medium tracking-[0.12em] text-black/60 transition-colors hover:text-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-highlight"
+                className={`text-[11px] font-medium tracking-[0.12em] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-highlight ${
+                  solid ? 'text-black/60 hover:text-black' : 'text-white/70 hover:text-white'
+                }`}
               >
                 {item.label}
               </a>
